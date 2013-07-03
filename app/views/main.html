@@ -1,0 +1,38 @@
+Layers
+<div class="layers">
+	<div ng-repeat="l in layers" class="layer">
+	<input type="checkbox" ng-model="l.visible"/> {{l.id}}</div>
+</div>
+Elements:
+<div style="position:relative;" ng-dblclick="addNew()">
+	<div style="background-color:#eee;width:2048px;position:absolute;height:2048px;top:0;left:0;">
+		<div ng-repeat="z in model.zones" class="zone" ng-style="{width: z.width, height: z.height, top:z.y, left:z.x}">
+			<h2>{{z.name}}</h2>
+			<input type="text" ng-model="z.type"/> <input type="text" ng-model="z.value"/>
+			<div class="elements" sort>
+				<div ng-repeat="e in model.elements | filter:filterType(z.type, z.value)" class="element">
+				{{e.name}} {{e.bmo.type}}
+				
+				
+				<!--
+					TODO:foreach active layer 
+					show current values, and possible new fields
+				-->
+				<div ng-repeat="a in activeLayerAttributes(e)">
+					{{a.name}}
+					
+						<input type="text" ng-model="e[a.layerId][a.name]"/>
+						<select ng-model="e[a.layerId][a.name]" ng-options="v for v in a.values"></select>
+				</div>				
+				
+				
+				</div>
+			</div>
+		</div>		
+	</div>
+<div>
+<!--
+<svg xmlns="http://www.w3.org/2000/svg" canvas width="2048" height="2048" ng-dblclick="addNew()">
+
+</svg>
+->>
