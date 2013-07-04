@@ -43,7 +43,7 @@ svg{
 }
 
 .element{
-	height: 100px;
+	min-height: 100px;
 	margin: 10px;
 	background-color: yellow;
 }

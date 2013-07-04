@@ -11,7 +11,9 @@ Elements:
 			<input type="text" ng-model="z.type"/> <input type="text" ng-model="z.value"/>
 			<div class="elements" sort>
 				<div ng-repeat="e in model.elements | filter:filterType(z.type, z.value)" class="element">
-				{{e.name}} {{e.bmo.type}}
+				<div ng-show="layers[1].visible" ng-repeat="t in tags()">{{t.name}}  {{t.color}}  {{e.tags.indexOf(t.name)}}</div>
+                
+                {{e.name}} {{e.bmo.type}}
 				
 				
 				<!--
@@ -30,9 +32,15 @@ Elements:
 			</div>
 		</div>		
 	</div>
-<div>
+</div>
+<div style="position:absolute;bottom:0">
+    <div ng-repeat="rule in rules">
+        <input type="checkbox" ng-checked="rule.valid()" /> {{rule.title}}
+        <div ng-repeat="error in rule.errors">{{error.text}} link?</div>
+    </div>
+</div>
 <!--
 <svg xmlns="http://www.w3.org/2000/svg" canvas width="2048" height="2048" ng-dblclick="addNew()">
 
 </svg>
-->>
+-->

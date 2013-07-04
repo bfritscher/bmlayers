@@ -70,6 +70,11 @@ angular.module('bmlayersApp')
 		}
 		return attributes;
 	}
+    
+
+    $scope.tags = function(){
+        return $scope.layers[1].tags;
+    };
 
 	$scope.layers = [
 		{
@@ -83,6 +88,20 @@ angular.module('bmlayersApp')
 				}
 			]
 			
+		},
+        {
+			id: 'tags',
+			type: 'tag',
+            tags:[
+                {
+                    name: 's3',
+                    color: 'green'
+                },
+                {
+                    name: 'normal',
+                    color: 'yellow'
+                }
+            ]	
 		},
 		{
 			id:'bmo',
@@ -135,10 +154,6 @@ angular.module('bmlayersApp')
 			]
 		},
 		{
-			id: 's3',
-			type: 'tag',
-			color: 'green'
-		},{
 			id:'change',
 			type: '???',
 			attributes: [
@@ -148,7 +163,12 @@ angular.module('bmlayersApp')
 					values : ['add', 'remove', 'lower', 'raise', 'widen', 'focus'],
 				}
 			]
-		}
+		},
+        {
+            id:'errors',
+            type: '???',
+            visible: true
+        }
 		//scale?
 		//n attributes of defines names
 		//n attributes unknown name?
@@ -187,7 +207,7 @@ angular.module('bmlayersApp')
 		],
 		elements: [
 			{
-				name:'test',
+				name:'test sd asdf asdf asd f',
 				bmo: {
 					type: 'cs'
 				},
@@ -195,10 +215,14 @@ angular.module('bmlayersApp')
 					color: 'orange'
 				},
 				l_g1: true,
-				l_test: {
-					test: 'todo'
+                tags: [
+                    's3'
+                ],
+				test: {
+					state: 'testing',
+                    critical: true
 				},
-				l_note: {
+				notes: {
 					note: 'Hello todo...'
 				},
 				v_bmo:{
@@ -226,6 +250,80 @@ angular.module('bmlayersApp')
 			}
 		]
 	};
+    
+    $scope.checkRules = function(){
+        var points = 0;
+        var rules = [];
+        $scope.rules.forEach(function(rule){
+            var errors = rule.rule();
+            rules.push({
+                title: rule.ruleTile,
+                ok: errors ? true : false,
+                errors: errors,
+                points: rule.points
+            });
+            points+=rule.points
+            
+        });
+    };
 
+    $scope.rules = [
+        {
+            appliesTo: 'bmo',
+            appliesWhen: 'bmoElements.count >= 9',
+            title: 'All block of the model should be used',
+            points: 10,
+            errors: [],
+            valid: function(){
+                var types = [];
+                $scope.model.elements.forEach(function(e){
+                    //types.remove(e.bmo.type)                    
+                });
+                this.errors = [];
+                types.forEach(function(t){
+                   errors.push(error(undefined,t));
+                });
+                return this.errors.length == 0;
+            }
+        },
+        {
+            appliesTo: 'elements.bmo', //all elements,
+            appliesWhen: 'true',
+            title: 'Elements are keywords',
+            points: 1,
+            errors: [],
+            valid: function(){
+                this.errors = [];
+                var that = this;
+                $scope.model.elements.forEach(function(e){
+                    if(e.name.split(' ').length > 4){
+                        that.errors.push(error(e))
+                    }
+                });
+                return this.errors.length == 0;
+            }
+        },
+        {
+            appliesTo: 'layers.tags.bmo',
+            appliesWhen: 'layer.bmo.count > 3?',
+            title: 'Customer Perspective parts are complete',
+            points: 1,
+            errors: [],
+            valid: function(){
+                this.errors = [];
+                var that = this;
+                $scope.model.elements.forEach(function(e){
+     
+                });
+                return this.errors.length == 0;
+            }
+        }
+    
+    ];
 
   });
+function error(e){
+     return {
+         text: e.name
+     };
+}

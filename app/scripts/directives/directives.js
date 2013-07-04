@@ -61,6 +61,6 @@ angular.module('bmlayersApp')
 			
 		}
 		
-		scope.$watch('model.elements.lenght', drawChart, true);//watch
+		scope.$watch('model.elements.length', drawChart, true);//watch
     };
   }]);
