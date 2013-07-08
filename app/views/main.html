@@ -6,37 +6,38 @@ Layers
 Elements:
 <div style="position:relative;" ng-dblclick="addNew()">
 	<div style="background-color:#eee;width:2048px;position:absolute;height:2048px;top:0;left:0;">
-		<div ng-repeat="z in model.zones" class="zone" ng-style="{width: z.width, height: z.height, top:z.y, left:z.x}">
-			<h2>{{z.name}}</h2>
+		<div ng-repeat="(name, z) in model.zones" class="zone" ng-style="{width: z.width, height: z.height, top:z.top, left:z.left}">
+			<h2>{{name}}</h2>
 			<input type="text" ng-model="z.type"/> <input type="text" ng-model="z.value"/>
 			<div class="elements" sort>
-				<div ng-repeat="e in model.elements | filter:filterType(z.type, z.value)" class="element">
+				<div ng-repeat="e in model.elements | filter:filterType(z.type, z.value)" class="element" ng-class="{'invalid': e.errors.length > 0}">
 				<div ng-show="layers[1].visible" ng-repeat="t in tags()">{{t.name}}  {{t.color}}  {{e.tags.indexOf(t.name)}}</div>
                 
-                {{e.name}} {{e.bmo.type}}
-				
-				
-				<!--
-					TODO:foreach active layer 
-					show current values, and possible new fields
-				-->
-				<div ng-repeat="a in activeLayerAttributes(e)">
-					{{a.name}}
-					
-						<input type="text" ng-model="e[a.layerId][a.name]"/>
-						<select ng-model="e[a.layerId][a.name]" ng-options="v for v in a.values"></select>
-				</div>				
-				
-				
+                    <input type="text" ng-model="e.name" /> {{e.bmo.type}}
+                    
+                    <!--
+                        TODO:foreach active layer 
+                        show current values, and possible new fields
+                    -->
+                    <div ng-repeat="a in activeLayerAttributes(e)">
+                        {{a.name}}
+                        
+                            <input type="text" ng-model="e[a.layerId][a.name]"/>
+                            <select ng-model="e[a.layerId][a.name]" ng-options="v for v in a.values"></select>
+                    </div>				
+                    <div class="errors">
+                        <div ng-repeat="err in e.errors" ng-bind="err"></div>
+                    </div>
 				</div>
+                <button ng-click="addElementToZone(z)">add</button>
 			</div>
 		</div>		
 	</div>
 </div>
-<div style="position:absolute;bottom:0">
+<div style="position:absolute;bottom:0;right:0">
     <div ng-repeat="rule in rules">
-        <input type="checkbox" ng-checked="rule.valid()" /> {{rule.title}}
-        <div ng-repeat="error in rule.errors">{{error.text}} link?</div>
+        <input type="checkbox" ng-checked="rule.valid" ng-disabled="!rule.active"/> {{rule.title}}
+        <div ng-repeat="error in rule.errors">{{error.obj.name}} link?</div>
     </div>
 </div>
 <!--

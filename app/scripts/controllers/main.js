@@ -29,8 +29,13 @@ var l_g1 = {
 }
 
 
+var bmc = {
+    width: 1000,
+    height: 1000
+};
+
 angular.module('bmlayersApp')
-  .controller('MainCtrl', function ($scope) {
+  .controller('MainCtrl', function ($scope, $timeout) {
 	$scope.addNew = function(){
 		$scope.model.elements.push({x:0,y:0, name:'test'});
 	};
@@ -185,26 +190,88 @@ angular.module('bmlayersApp')
 	};
 
 	$scope.model = {
-		zones:[
-			{
-				x:0,
-				y:0,
-				width: 300,
-				height: 500,
-				name: 'test',
-				type: 'bmo.type',
-				value: 'cs'
-			},
-			{
-				x:300,
-				y:0,
-				width: 300,
-				height: 500,
-				name: 'test2',
-				type: 'bmo.type',
-				value: 'vp'
-			},
-		],
+		zones:{'partner_network':{
+			width: bmc.width/5,
+			height: bmc.height/3*2,
+			top:0,
+			left:0,
+			canvas: 'bmc',
+            type: 'bmo.type',
+			value: 'pn'
+		},
+		'key_activities':{
+			width: bmc.width/5,
+			height: bmc.height/3,
+			top:0,
+			left: bmc.width/5,
+			canvas: 'bmc',
+            type: 'bmo.type',
+			value: 'ka'
+		},
+		'key_resources':{
+			width: bmc.width/5,
+			height: bmc.height/3,
+			top:bmc.height/3,
+			left: bmc.width/5,
+			canvas: 'bmc',
+            type: 'bmo.type',
+			value: 'kr'
+		},
+		'cost_structure':{
+			width: bmc.width/2,
+			height: bmc.height/3,
+			top:bmc.height/3*2,
+			left:0,
+			canvas: 'bmc',
+            type: 'bmo.type',
+			value: 'c'
+		},
+		'value_proposition':{
+			width: bmc.width/5,
+			height: bmc.height/3*2,
+			top:0,
+			left:bmc.width/5*2,
+			canvas: 'bmc',
+            type: 'bmo.type',
+			value: 'vp'
+		},
+		'customer_segments':{
+			width: bmc.width/5,
+			height: bmc.height/3*2,
+			top:0,
+			left:bmc.width/5*4,
+			canvas: 'bmc',
+            type: 'bmo.type',
+			value: 'cs'
+		},
+		'customer_relationship':{
+			width: bmc.width/5,
+			height: bmc.height/3,
+			top:0,
+			left:bmc.width/5*3,
+			canvas: 'bmc',
+            type: 'bmo.type',
+			value: 'cr'
+		},
+		'channels':{
+			width: bmc.width/5,
+			height: bmc.height/3,
+			top:bmc.height/3,
+			left:bmc.width/5*3,
+			canvas: 'bmc',
+            type: 'bmo.type',
+			value: 'ch'
+		},
+		'revenue_streams':{
+			width: bmc.width/2,
+			height: bmc.height/3,
+			top:bmc.height/3*2,
+			left:bmc.width/2,
+			canvas: 'bmc',
+            type: 'bmo.type',
+			value: 'r'
+		}
+		},
 		elements: [
 			{
 				name:'test sd asdf asdf asd f',
@@ -230,7 +297,8 @@ angular.module('bmlayersApp')
 					y:0
 				},
 				x:0,
-				y:0
+				y:0,
+                errors:[]
 			},
 			{
 				name:'test2',
@@ -239,91 +307,138 @@ angular.module('bmlayersApp')
 				y:0,
 				bmo: {
 					type: 'vp'
-				}
+				},
+                errors:[]
 			},
 			{
 				name: 'no time to buy',
 				vpc: {
 					type: 'pain',
 					parent: 'id of a bmo.type=cs' //TODO reference?
-				}
+				},
+                errors:[]
 			}
 		]
 	};
     
-    $scope.checkRules = function(){
-        var points = 0;
-        var rules = [];
-        $scope.rules.forEach(function(rule){
-            var errors = rule.rule();
-            rules.push({
-                title: rule.ruleTile,
-                ok: errors ? true : false,
-                errors: errors,
-                points: rule.points
-            });
-            points+=rule.points
-            
-        });
+    $scope.addElementToZone = function(zone){
+          //TODO view
+          var e = {
+              name: 'New...',
+              
+          };
+          addProperty(e, zone.type, zone.value);
+          $scope.model.elements.push(e);
     };
-
+    
+    function addProperty(obj, properties, value){
+        properties = properties.split('.');
+        var property = properties.shift();
+        obj[property] = {};
+        if(properties.length === 0){
+            obj[property] = value;
+        }else{
+            addProperty(obj[property], properties.join('.'), value);
+        }
+    }
+    
+    $scope.checkRules = function(){
+      var points = 0;
+      var rules = [];
+      //reset errors on elements
+      $scope.model.elements.forEach(function(e){
+          e.errors = [];
+      });
+      $scope.rules.forEach(function(rule){
+          rule.check(); 
+      });
+    };
+    
+    $scope.$watch('model', $scope.checkRules, true);
     $scope.rules = [
-        {
-            appliesTo: 'bmo',
-            appliesWhen: 'bmoElements.count >= 9',
+        new Rule({
             title: 'All block of the model should be used',
             points: 10,
-            errors: [],
-            valid: function(){
+            when: function(){
+                return $scope.model.elements.reduce(function(sum, e){
+                    if(e.bmo){
+                        sum++;
+                    }
+                    return sum;
+                }, 0) >= 9;
+            },
+            rule: function(rule){
                 var types = [];
                 $scope.model.elements.forEach(function(e){
                     //types.remove(e.bmo.type)                    
                 });
-                this.errors = [];
                 types.forEach(function(t){
-                   errors.push(error(undefined,t));
+                   rule.addError(t);
                 });
-                return this.errors.length == 0;
             }
-        },
-        {
+        }),
+        new Rule({
             appliesTo: 'elements.bmo', //all elements,
-            appliesWhen: 'true',
             title: 'Elements are keywords',
-            points: 1,
-            errors: [],
-            valid: function(){
-                this.errors = [];
-                var that = this;
+            fix: 'Reformulate title as keywords',
+            when: function(){return true;},
+            rule: function(rule){
                 $scope.model.elements.forEach(function(e){
                     if(e.name.split(' ').length > 4){
-                        that.errors.push(error(e))
+                        rule.addError(e);
+                        //TODO??
+                        e.errors.push(rule.fix);
                     }
                 });
-                return this.errors.length == 0;
             }
-        },
-        {
+        }),
+        new Rule({
             appliesTo: 'layers.tags.bmo',
-            appliesWhen: 'layer.bmo.count > 3?',
             title: 'Customer Perspective parts are complete',
-            points: 1,
-            errors: [],
-            valid: function(){
-                this.errors = [];
-                var that = this;
+            when: function(){return true;},//'layer.bmo.count > 3?',
+            rule: function(rule){
                 $scope.model.elements.forEach(function(e){
      
                 });
-                return this.errors.length == 0;
             }
-        }
+        })
     
     ];
 
   });
-function error(e){
-     return {
-         text: e.name
-     };
+function RuleFail(obj){
+     this.obj = obj;
+     //Types?
 }
+
+function Rule(obj){
+    this.title = 'norule';
+    this.category = '';
+    this.fix = '';
+    this.points = 0;
+    
+    obj = obj || {};
+    angular.extend(this, obj)
+    
+    this.valid = false;
+    this.errors = [];
+    this.active = false;
+};
+Rule.prototype.check = function(){
+    this.active = this.when();
+    this.valid = false;
+    if(this.active){
+        this.errors = [];
+        this.rule(this);
+        this.valid =  this.errors.length == 0;
+    }
+};
+Rule.prototype.when = function when(){
+    this.active = false;
+};
+Rule.prototype.rule = function rule(){
+    return false;
+};
+Rule.prototype.addError = function addError(obj){
+    this.errors.push(new RuleFail(obj));
+};
