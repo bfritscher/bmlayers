@@ -35,10 +35,15 @@ var bmc = {
 };
 
 angular.module('bmlayersApp')
-  .controller('MainCtrl', function ($scope, $timeout) {
-	$scope.addNew = function(){
+  .controller('MainCtrl', function ($scope, $timeout, Rules, layers) {
+	
+    $scope.layers = layers;
+    
+    $scope.addNew = function(){
 		$scope.model.elements.push({x:0,y:0, name:'test'});
 	};
+    
+    
 	
 	$scope.filterType = function(type, value){
 		return function(e){
@@ -58,8 +63,8 @@ angular.module('bmlayersApp')
 	
 	$scope.activeLayerAttributes = function(e){
 		var attributes = [];
-		for(var i=0; i < $scope.layers.length; i++){
-			var l = $scope.layers[i];
+		for(var id in $scope.layers){
+			var l = $scope.layers[id];
 			if(l.visible && l.attributes){
 				for(var j=0; j < l.attributes.length; j++){
 					var a = l.attributes[j];
@@ -78,108 +83,8 @@ angular.module('bmlayersApp')
     
 
     $scope.tags = function(){
-        return $scope.layers[1].tags;
+        return $scope.layers.tags.tags;
     };
-
-	$scope.layers = [
-		{
-			id: 'color',
-			type: 'one_value_from_list',
-			attributes: [
-				{
-					name: 'color',
-					isUnique: true,
-					values : ['red', 'blue']
-				}
-			]
-			
-		},
-        {
-			id: 'tags',
-			type: 'tag',
-            tags:[
-                {
-                    name: 's3',
-                    color: 'green'
-                },
-                {
-                    name: 'normal',
-                    color: 'yellow'
-                }
-            ]	
-		},
-		{
-			id:'bmo',
-			type:'one_value_from_list',
-			attributes: [
-				{
-					name: 'type',
-					isUnique: true,
-					values : ['cs', 'vp', 'dc', 'cr', 'r', 'c','pn','kr', 'ka']
-				}
-			]
-		},
-		{
-			id:'bmo_detail',
-			type: 'values for specific component',
-			attributes: [
-				{
-					name: 'type_detail',
-					isUnique: true,
-					values : ['replication', 'innovation'],
-					filter: "bmo.type=='vp'"
-				}
-			]
-		},
-		{
-			id:'test',
-			type:'one_value_from_list',
-			attributes: [
-				{
-					name: 'state',
-					isUnique: true,
-					values : ['testing', 'pass', 'fail'],
-				},
-				{
-					name: 'critical',
-					isUnique: true,
-					values: [false, true]			
-				}
-			]
-		},
-		{
-			id: 'notes',
-			type:'one_value_openformat',
-			attributes: [
-				{
-					name: 'note',
-					isUnique: true,
-					values : '',
-				}
-			]
-		},
-		{
-			id:'change',
-			type: '???',
-			attributes: [
-				{
-					name: 'type',
-					isUnique: true,
-					values : ['add', 'remove', 'lower', 'raise', 'widen', 'focus'],
-				}
-			]
-		},
-        {
-            id:'errors',
-            type: '???',
-            visible: true
-        }
-		//scale?
-		//n attributes of defines names
-		//n attributes unknown name?
-		
-		//rule help max n words value.match(/\w+/g).length;
-	];
 	
 	$scope.views = {
 		v_bmo: {
@@ -260,7 +165,7 @@ angular.module('bmlayersApp')
 			left:bmc.width/5*3,
 			canvas: 'bmc',
             type: 'bmo.type',
-			value: 'ch'
+			value: 'dc'
 		},
 		'revenue_streams':{
 			width: bmc.width/2,
@@ -297,29 +202,59 @@ angular.module('bmlayersApp')
 					y:0
 				},
 				x:0,
-				y:0,
-                errors:[]
+				y:0
 			},
 			{
 				name:'test2',
-				type: '',
 				x:0,
 				y:0,
 				bmo: {
 					type: 'vp'
 				},
-                errors:[]
+                tags:[]
 			},
+            {
+                name: 'channel1',
+                bmo:{
+                    type: 'dc'
+                },
+                tags:[
+                'dummy'
+                ]
+            },
+            {
+                name: 'ch2',
+                bmo:{
+                    type: 'dc'
+                },
+                tags:[
+                'dummy'
+                ]
+            },
+            {
+                name: 'r1',
+                bmo:{
+                    type: 'r'
+                },
+                tags:[
+                's3'
+                ]
+            },
 			{
 				name: 'no time to buy',
 				vpc: {
 					type: 'pain',
 					parent: 'id of a bmo.type=cs' //TODO reference?
-				},
-                errors:[]
+				}
 			}
 		]
 	};
+    
+    $scope.displayRuleCategory = function(cat){
+        var display = cat !== $scope.currentRuleCategory;
+        $scope.currentRuleCategory = cat;
+        return display;
+    }
     
     $scope.addElementToZone = function(zone){
           //TODO view
@@ -341,104 +276,9 @@ angular.module('bmlayersApp')
             addProperty(obj[property], properties.join('.'), value);
         }
     }
-    
-    $scope.checkRules = function(){
-      var points = 0;
-      var rules = [];
-      //reset errors on elements
-      $scope.model.elements.forEach(function(e){
-          e.errors = [];
-      });
-      $scope.rules.forEach(function(rule){
-          rule.check(); 
-      });
-    };
-    
-    $scope.$watch('model', $scope.checkRules, true);
-    $scope.rules = [
-        new Rule({
-            title: 'All block of the model should be used',
-            points: 10,
-            when: function(){
-                return $scope.model.elements.reduce(function(sum, e){
-                    if(e.bmo){
-                        sum++;
-                    }
-                    return sum;
-                }, 0) >= 9;
-            },
-            rule: function(rule){
-                var types = [];
-                $scope.model.elements.forEach(function(e){
-                    //types.remove(e.bmo.type)                    
-                });
-                types.forEach(function(t){
-                   rule.addError(t);
-                });
-            }
-        }),
-        new Rule({
-            appliesTo: 'elements.bmo', //all elements,
-            title: 'Elements are keywords',
-            fix: 'Reformulate title as keywords',
-            when: function(){return true;},
-            rule: function(rule){
-                $scope.model.elements.forEach(function(e){
-                    if(e.name.split(' ').length > 4){
-                        rule.addError(e);
-                        //TODO??
-                        e.errors.push(rule.fix);
-                    }
-                });
-            }
-        }),
-        new Rule({
-            appliesTo: 'layers.tags.bmo',
-            title: 'Customer Perspective parts are complete',
-            when: function(){return true;},//'layer.bmo.count > 3?',
-            rule: function(rule){
-                $scope.model.elements.forEach(function(e){
-     
-                });
-            }
-        })
-    
-    ];
+            
+    $scope.$watch('model', function(){Rules.checkAll($scope.model);}, true);
+    $scope.$watch('layers', function(){Rules.checkAll($scope.model);}, true);
+    $scope.rules = Rules.rules();
 
   });
-function RuleFail(obj){
-     this.obj = obj;
-     //Types?
-}
-
-function Rule(obj){
-    this.title = 'norule';
-    this.category = '';
-    this.fix = '';
-    this.points = 0;
-    
-    obj = obj || {};
-    angular.extend(this, obj)
-    
-    this.valid = false;
-    this.errors = [];
-    this.active = false;
-};
-Rule.prototype.check = function(){
-    this.active = this.when();
-    this.valid = false;
-    if(this.active){
-        this.errors = [];
-        this.rule(this);
-        this.valid =  this.errors.length == 0;
-    }
-};
-Rule.prototype.when = function when(){
-    this.active = false;
-};
-Rule.prototype.rule = function rule(){
-    return false;
-};
-Rule.prototype.addError = function addError(obj){
-    this.errors.push(new RuleFail(obj));
-};
