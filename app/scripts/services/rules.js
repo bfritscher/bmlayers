@@ -68,6 +68,48 @@ angular.module('bmlayersApp')
                     rule.addError({name:'NOT IMPLEMENTED'});
                 }
             }),
+            bmc_split_multisided: new Rule({
+                title: 'cs multisided split',
+                fix: 'Connect a customer segment with a value proposition and their channel and revenues by tagging them.',
+                category: 'model_coherence',
+                why: 'Elements have to be connected to be meaningful',
+                when: '???',
+                trigger: function(){return true;},//'layer.bmo.count > 3?',
+                rule: function(rule){
+                    model.elements.forEach(function(e){
+         
+                    });
+                    rule.addError({name:'NOT IMPLEMENTED'});
+                }
+            }),
+            bmc_vp_detail_level: new Rule({
+                title: 'vp detail level',
+                fix: 'Connect a customer segment with a value proposition and their channel and revenues by tagging them.',
+                category: 'model_coherence',
+                why: 'Elements have to be connected to be meaningful',
+                when: '???',
+                trigger: function(){return true;},//'layer.bmo.count > 3?',
+                rule: function(rule){
+                    model.elements.forEach(function(e){
+         
+                    });
+                    rule.addError({name:'NOT IMPLEMENTED'});
+                }
+            }),
+            bmc_vp_produced: new Rule({
+                title: 'vp produced',
+                fix: 'Connect a customer segment with a value proposition and their channel and revenues by tagging them.',
+                category: 'model_coherence',
+                why: 'Elements have to be connected to be meaningful',
+                when: '???',
+                trigger: function(){return true;},//'layer.bmo.count > 3?',
+                rule: function(rule){
+                    model.elements.forEach(function(e){
+         
+                    });
+                    rule.addError({name:'NOT IMPLEMENTED'});
+                }
+            }),
             bmc_tag_not_block: new Rule({
                 title: 'Tags are used to connect blocks.',
                 fix: 'Add tag {0} to elements in other blocks.',
@@ -116,9 +158,131 @@ angular.module('bmlayersApp')
                 when: 'always',
                 trigger: function(){return true;},
                 rule: function(rule){
-                    if(elementsByTypes.pn.length + elementsByTypes.ka.length + elementsByTypes.kr.length === 0){
+                    if(!(elementsByTypes.ka.length > 0 && elementsByTypes.kr.length > 0 && elementsByTypes.vp.length > 0)){
                         rule.addError({name: 'No Activity Perspective!'});
                     }
+                }
+            }),
+            help_right_side: new Rule({
+                title: 'Using client perspective',
+                fix: 'Check out this information....',
+                category: 'help',
+                why: 'Business Model show What we provide to Whom and How we make it.',
+                when: 'always',
+                trigger: function(){return true;},
+                rule: function(rule){
+                    if(!(elementsByTypes.cs.length > 0 && elementsByTypes.dc.length > 0 && elementsByTypes.vp.length > 0)){
+                        rule.addError({name: 'No Client Perspective!'});
+                    }
+                }
+            }),
+            help_financial_side: new Rule({
+                title: 'Using financial perspective',
+                fix: 'Add cost strucutre and revenue streams',
+                category: 'help',
+                why: 'Business Model show What we provide to Whom and How we make it and How much.',
+                when: 'model has activity and client perspectives',
+                trigger: function(){return rules.help_left_side.check() && rules.help_right_side.check();},
+                rule: function(rule){
+                    if(!(elementsByTypes.r.length > 0 && elementsByTypes.c.length > 0)){
+                        rule.addError({name: 'No Financial!'});
+                    }
+                }
+            }),
+            help_split_cs: new Rule({
+                title: 'CS only 1?',
+                fix: 'split?',
+                category: 'help',
+                why: '',
+                when: '',
+                trigger: function(){return true;},
+                rule: function(rule){
+                     rule.addError({name:'NOT IMPLEMENTED'});
+                }
+            }),
+            add_detail_cs: new Rule({
+                title: 'Customer segment has a size.',
+                fix: 'Add a size to the customer segment.',
+                category: 'numbers',
+                why: 'Being able to calculated revenue',
+                when: '??? detail, calculation mode?',
+                trigger: function(){return true;},
+                rule: function(rule){
+                    elementsByTypes['cs'].forEach(function(e){
+                        if(!(e.bmo_detail && e.bmo_detail.size)){
+                            rule.addError(e);
+                            //TODO better??
+                            e.errors.push(rule.fix);
+                        }
+                    });
+                }
+            }),
+            add_detail_revenue: new Rule({
+                title: 'revenue % or total',
+                fix: 'calc?',
+                category: 'numbers',
+                why: '',
+                when: '',
+                trigger: function(){return true;},
+                rule: function(rule){
+                     rule.addError({name:'NOT IMPLEMENTED'});
+                }
+            }),
+            add_detail_cost: new Rule({
+                title: 'fix, variable, ... per item?',
+                fix: 'calc?',
+                category: 'numbers',
+                why: '',
+                when: '',
+                trigger: function(){return true;},
+                rule: function(rule){
+                     rule.addError({name:'NOT IMPLEMENTED'});
+                }
+            }),
+            trigger_recurring_revenue: new Rule({
+                title: 'Recurring revenue by providing a service',
+                fix: 'Can a product be transformed into a service?',
+                category: 'trigger',
+                why: 'more regular financial flow',
+                when: '???',
+                trigger: function(){return true;},
+                rule: function(rule){
+                    //All(vp.type = product) && All(revenue.type!=recurring)
+                     rule.addError({name:'NOT IMPLEMENTED'});
+                }
+            }),
+            trigger_switching_cost: new Rule({
+                title: 'Switching cost',
+                fix: 'Can switching cost be added?',
+                category: 'trigger',
+                why: '',
+                when: '???',
+                trigger: function(){return true;},
+                rule: function(rule){
+                    //Any(Cr has properity lock-in or switching cost)
+                     rule.addError({name:'NOT IMPLEMENTED'});
+                }
+            }),
+            trigger_cost_structure: new Rule({
+                title: 'Cost strucutre more variable than fixed',
+                fix: '',
+                category: 'trigger',
+                why: '',
+                when: '???',
+                trigger: function(){return true;},
+                rule: function(rule){
+                    //???
+                }
+            }),
+            trigger_more_partners: new Rule({
+                title: 'Getting others to do the work',
+                fix: '',
+                category: 'trigger',
+                why: '',
+                when: '???',
+                trigger: function(){return true;},
+                rule: function(rule){
+                    //Count of partner and connected to which products % total
                 }
             }),
             test_state: new Rule({
@@ -127,7 +291,7 @@ angular.module('bmlayersApp')
                 category: 'testing',
                 why: 'Move beyond guesses',
                 when: 'test layer is active',
-                trigger: function(){return layers.test.visible;},//'layer.bmo.count > 3?',
+                trigger: function(){return layers.test.visible;},
                 rule: function(rule){
                     model.elements.forEach(function(e){
                          if(!(e.test && e.test.state)){
@@ -231,6 +395,7 @@ Rule.prototype.check = function(){
         this.rule(this);
         this.valid =  this.errors.length == 0;
     }
+    return this.valid;
 };
 Rule.prototype.trigger = function trigger(){
     this.active = false;

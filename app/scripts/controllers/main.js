@@ -28,6 +28,7 @@ var l_g1 = {
 
 }
 
+//http://blog.brunoscopelliti.com/internazionalization-i18n-with-angularjs
 
 var bmc = {
     width: 1000,

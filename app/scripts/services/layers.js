@@ -58,6 +58,12 @@ angular.module('bmlayersApp')
 					isUnique: true,
 					values : ['replication', 'innovation'],
 					filter: "bmo.type=='vp'"
+				},
+                {
+					name: 'size',
+					isUnique: true,
+					values : 'number',
+					filter: "bmo.type=='cs'"
 				}
 			]
 		},
