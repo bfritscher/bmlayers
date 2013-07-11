@@ -24,15 +24,15 @@ angular.module('bmlayersApp')
             tags:[
                 {
                     name: 's3',
-                    color: 'green'
+                    color: colors[0]
                 },
                 {
                     name: 'normal',
-                    color: 'yellow'
+                    color: colors[1]
                 },
                 {
                     name: 'dummy',
-                    color: 'blue'
+                    color: colors[5]
                 }
             ]	
 		},

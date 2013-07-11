@@ -272,6 +272,7 @@ angular.module('bmlayersApp')
                 trigger: function(){return true;},
                 rule: function(rule){
                     //???
+                    rule.addError({name:'NOT IMPLEMENTED'});
                 }
             }),
             trigger_more_partners: new Rule({
@@ -283,6 +284,55 @@ angular.module('bmlayersApp')
                 trigger: function(){return true;},
                 rule: function(rule){
                     //Count of partner and connected to which products % total
+                    rule.addError({name:'NOT IMPLEMENTED'});
+                }
+            }),
+            pattern_unbundling: new Rule({
+                title: 'Unbundling',
+                fix: '',
+                category: 'pattern',
+                why: '',
+                when: '???',
+                trigger: function(){return true;},
+                rule: function(rule){
+                    //Count of partner and connected to which products % total
+                    rule.addError({name:'NOT IMPLEMENTED'});
+                }
+            }),
+            pattern_multisided: new Rule({
+                title: 'Multi-sided',
+                fix: '',
+                category: 'pattern',
+                why: '',
+                when: '???',
+                trigger: function(){return true;},
+                rule: function(rule){
+                    //Count of partner and connected to which products % total
+                    rule.addError({name:'NOT IMPLEMENTED'});
+                }
+            }),
+            pattern_freemium: new Rule({
+                title: 'Freemium',
+                fix: '',
+                category: 'pattern',
+                why: '',
+                when: '???',
+                trigger: function(){return true;},
+                rule: function(rule){
+                    //Count of partner and connected to which products % total
+                    rule.addError({name:'NOT IMPLEMENTED'});
+                }
+            }),
+            pattern_bait_hook: new Rule({
+                title: 'Bait & Hook',
+                fix: '',
+                category: 'pattern',
+                why: '',
+                when: '???',
+                trigger: function(){return true;},
+                rule: function(rule){
+                    //Count of partner and connected to which products % total
+                    rule.addError({name:'NOT IMPLEMENTED'});
                 }
             }),
             test_state: new Rule({
@@ -301,7 +351,20 @@ angular.module('bmlayersApp')
                          }
                     });
                 }                
-        })};
+            }),
+            compare_to_exercice: new Rule({
+                title: 'Exercice compare',
+                fix: '',
+                category: 'training',
+                why: 'training',
+                when: 'exercice loaded',
+                trigger: function(){return true;},
+                rule: function(rule){
+                    //Count of partner and connected to which products % total
+                    rule.addError({name:'NOT IMPLEMENTED'});
+                }
+            })
+        };
 
     // Public API here
     return {

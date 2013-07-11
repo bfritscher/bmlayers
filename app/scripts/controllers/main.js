@@ -28,7 +28,7 @@ var l_g1 = {
 
 }
 
-//http://blog.brunoscopelliti.com/internazionalization-i18n-with-angularjs
+var colors = ['#34b27d','#dbdb57', '#e09952', '#cb4d4d', '#93c', '#4d77cb'];
 
 var bmc = {
     width: 1000,
@@ -81,6 +81,15 @@ angular.module('bmlayersApp')
 		}
 		return attributes;
 	}
+    
+    $scope.toggleTag = function(e, tag){
+        var idx = e.tags.indexOf(tag.name);
+        if(idx >=0){
+             e.tags.splice(idx, 1);
+        }else{
+            e.tags.push(tag.name);
+        }
+    };
     
 
     $scope.tags = function(){
