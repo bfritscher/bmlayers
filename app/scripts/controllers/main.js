@@ -31,20 +31,14 @@ var l_g1 = {
 var colors = ['#34b27d','#dbdb57', '#e09952', '#cb4d4d', '#93c', '#4d77cb'];
 
 var bmc = {
-    width: 1000,
-    height: 1000
+    width: 100,
+    height: 100
 };
 
 angular.module('bmlayersApp')
   .controller('MainCtrl', function ($scope, $timeout, Rules, layers) {
 	
     $scope.layers = layers;
-    
-    $scope.addNew = function(){
-		$scope.model.elements.push({x:0,y:0, name:'test'});
-	};
-    
-    
 	
 	$scope.filterType = function(type, value){
 		return function(e){
@@ -91,6 +85,11 @@ angular.module('bmlayersApp')
         }
     };
     
+    $scope.removeElement = function(e){
+        var idx = $scope.model.elements.indexOf(e);
+        if(idx >=0) $scope.model.elements.splice(idx, 1);
+    };
+    
 
     $scope.tags = function(){
         return $scope.layers.tags.tags;
@@ -107,7 +106,7 @@ angular.module('bmlayersApp')
 	$scope.model = {
 		zones:{'partner_network':{
 			width: bmc.width/5,
-			height: bmc.height/3*2,
+			height: bmc.height/4*3,
 			top:0,
 			left:0,
 			canvas: 'bmc',
@@ -116,7 +115,7 @@ angular.module('bmlayersApp')
 		},
 		'key_activities':{
 			width: bmc.width/5,
-			height: bmc.height/3,
+			height: bmc.height/8*3,
 			top:0,
 			left: bmc.width/5,
 			canvas: 'bmc',
@@ -125,8 +124,8 @@ angular.module('bmlayersApp')
 		},
 		'key_resources':{
 			width: bmc.width/5,
-			height: bmc.height/3,
-			top:bmc.height/3,
+			height: bmc.height/8*3,
+			top:bmc.height/8*3,
 			left: bmc.width/5,
 			canvas: 'bmc',
             type: 'bmo.type',
@@ -134,8 +133,8 @@ angular.module('bmlayersApp')
 		},
 		'cost_structure':{
 			width: bmc.width/2,
-			height: bmc.height/3,
-			top:bmc.height/3*2,
+			height: bmc.height/4,
+			top:bmc.height/8*6,
 			left:0,
 			canvas: 'bmc',
             type: 'bmo.type',
@@ -143,7 +142,7 @@ angular.module('bmlayersApp')
 		},
 		'value_proposition':{
 			width: bmc.width/5,
-			height: bmc.height/3*2,
+			height: bmc.height/8*6,
 			top:0,
 			left:bmc.width/5*2,
 			canvas: 'bmc',
@@ -152,7 +151,7 @@ angular.module('bmlayersApp')
 		},
 		'customer_segments':{
 			width: bmc.width/5,
-			height: bmc.height/3*2,
+			height: bmc.height/8*6,
 			top:0,
 			left:bmc.width/5*4,
 			canvas: 'bmc',
@@ -161,7 +160,7 @@ angular.module('bmlayersApp')
 		},
 		'customer_relationship':{
 			width: bmc.width/5,
-			height: bmc.height/3,
+			height: bmc.height/8*3,
 			top:0,
 			left:bmc.width/5*3,
 			canvas: 'bmc',
@@ -170,8 +169,8 @@ angular.module('bmlayersApp')
 		},
 		'channels':{
 			width: bmc.width/5,
-			height: bmc.height/3,
-			top:bmc.height/3,
+			height: bmc.height/8*3,
+			top:bmc.height/8*3,
 			left:bmc.width/5*3,
 			canvas: 'bmc',
             type: 'bmo.type',
@@ -179,8 +178,8 @@ angular.module('bmlayersApp')
 		},
 		'revenue_streams':{
 			width: bmc.width/2,
-			height: bmc.height/3,
-			top:bmc.height/3*2,
+			height: bmc.height/8*2,
+			top:bmc.height/8*6,
 			left:bmc.width/2,
 			canvas: 'bmc',
             type: 'bmo.type',
@@ -270,7 +269,7 @@ angular.module('bmlayersApp')
           //TODO view
           var e = {
               name: 'New...',
-              
+              tags:[]
           };
           addProperty(e, zone.type, zone.value);
           $scope.model.elements.push(e);

@@ -3,42 +3,41 @@ Layers
 	<div ng-repeat="(id, l) in layers" class="layer">
 	<input type="checkbox" ng-model="l.visible"/> {{l.id}}</div>
 </div>
-Elements:
-<div style="position:relative;" ng-dblclick="addNew()">
-	<div style="background-color:#eee;width:2048px;position:absolute;height:2048px;top:0;left:0;">
-		<div ng-repeat="(name, z) in model.zones" class="zone" ng-style="{width: z.width, height: z.height, top:z.top, left:z.left}">
-			<h2>{{name | i18n}}</h2>
-			<input type="text" ng-model="z.type"/> <input type="text" ng-model="z.value"/>
-			<div class="elements" sort>
-				<div ng-repeat="e in model.elements | filter:filterType(z.type, z.value)" class="element" ng-class="{'invalid': e.errors.length > 0}">
-				<div ng-show="layers.tags.visible" ng-repeat="t in tags()" class="tag" style="background-color:{{t.color}};"><label>{{t.name}}<input ng-click="toggleTag(e, t)" ng-checked="e.tags.indexOf(t.name) >= 0" type="checkbox" /></label></div>
-                
-                    <input type="text" ng-model="e.name" /> {{e.bmo.type}}
-                    
+<div class="view">
+    <div class="view-ratio"></div>
+    <div class="content">
+        <div  class="zone" ng-repeat="(name, z) in model.zones" ng-style="{width: z.width + '%', height: z.height + '%', top:z.top + '%', left:z.left + '%'}">
+            <h2><button ng-click="addElementToZone(z)" class="btn btn-link"><i class="icon-plus-sign-alt icon-large"></i></button> {{name | i18n}}</h2>
+            <div class="elements" sort>
+                <div class="element" ng-repeat="e in model.elements | filter:filterType(z.type, z.value)" ng-class="{'invalid': e.errors.length > 0}">
+                    <div class="tags">
+                        <div ng-show="layers.tags.visible" ng-repeat="t in tags()" class="tag" ng-class="{hidden: e.tags.indexOf(t.name) < 0}" style="background-color:{{t.color}};" title="{{t.name}}" ng-click="toggleTag(e, t)"></div>
+                        <div class="clear"></div>
+                    </div>
+                    <span class="element-errors"><i class="icon-warning-sign text-error" ng-show="e.errors.length > 0"
+                        popover-placement="bottom" popover-trigger="mouseenter" popover="{{e.errors}}"></i></span>
+                    <input type="text" ng-model="e.name" />
                     <!--
-                        TODO:foreach active layer 
-                        show current values, and possible new fields
-                    -->
+    TODO:foreach active layer 
+    show current values, and possible new fields
+    -->
                     <div ng-repeat="a in activeLayerAttributes(e)">
                         {{a.name}}
                         
-                            <input type="text" ng-model="e[a.layerId][a.name]"/>
-                            <select ng-model="e[a.layerId][a.name]" ng-options="v for v in a.values"></select>
+                        <input type="text" ng-model="e[a.layerId][a.name]"/>
+                        <select ng-model="e[a.layerId][a.name]" ng-options="v for v in a.values"></select>
                     </div>				
-                    <div class="errors">
-                        <div ng-repeat="err in e.errors" ng-bind="err"></div>
-                    </div>
-				</div>
-                <button ng-click="addElementToZone(z)">add</button>
-			</div>
-		</div>		
-	</div>
+                    <button class="btn btn-link btn-remove" ng-click="removeElement(e)"><i class="icon-trash"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div style="position:absolute;bottom:0;right:0;height:100%;overflow:auto">
-    <div ng-repeat="rule in rules">
-        <h2 ng-if="displayRuleCategory(rule.category)" ng-bind="rule.category | i18n"></h2>
+<div class="rules-container">
+    <div class="rule" ng-repeat="rule in rules">
+        <h3 ng-if="displayRuleCategory(rule.category)" ng-bind="rule.category | i18n"></h3>
         <input type="checkbox" ng-checked="rule.valid" ng-disabled="!rule.active"/> {{rule.title}}
-        <div ng-repeat="error in rule.errors">{{error.obj.name}}</div>
+        <div ng-repeat="error in rule.errors" class="text-error">{{error.obj.name}}</div>
         
     </div>
 </div>

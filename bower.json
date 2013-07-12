@@ -2,15 +2,18 @@
   "name": "bmlayers",
   "version": "0.0.0",
   "dependencies": {
-    "angular" : "PatternConsulting/bower-angular",
     "json3": "~3.2.4",
     "es5-shim": "~2.0.8",
+	"d3": "latest",
+	"jquery": "latest",
+	"jquery-ui": "latest",
+	"bootstrap-css": "latest",
+	"font-awesome": "latest",
+	"angular" : "PatternConsulting/bower-angular",
     "angular-resource": "PatternConsulting/bower-angular",
     "angular-cookies": "PatternConsulting/bower-angular",
     "angular-sanitize": "PatternConsulting/bower-angular",
-	"d3": "latest",
-	"jquery": "latest",
-	"jquery-ui": "latest"
+	"angular-ui-bootstrap-bower": "latest"
   },
   "devDependencies": {
     "angular-mocks": "PatternConsulting/bower-angular",

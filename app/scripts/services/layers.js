@@ -21,6 +21,7 @@ angular.module('bmlayersApp')
         {
 			id: 'tags',
 			type: 'tag',
+            visible: true,
             tags:[
                 {
                     name: 's3',
@@ -29,6 +30,18 @@ angular.module('bmlayersApp')
                 {
                     name: 'normal',
                     color: colors[1]
+                },
+                {
+                    name: '',
+                    color: colors[2]
+                },
+                {
+                    name: '',
+                    color: colors[3]
+                },
+                {
+                    name: '',
+                    color: colors[4]
                 },
                 {
                     name: 'dummy',

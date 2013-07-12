@@ -1,51 +1,97 @@
 /* Will be compiled down to a single stylesheet with your sass files */
+@import url(http://fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic);
 
-body{
-	font-family: Helvetica, Arial, sans-serif
+*, *:after, *:before {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
-.menu {
-  list-style: none;
-  border-bottom: 0.1em solid black;
-  margin-bottom: 2em;
-  padding: 0 0 0.5em;
-}
-
-.menu:before {
-  content: "[";
-}
-
-.menu:after {
-  content: "]";
-}
-
-.menu > li {
-  display: inline;
-}
-
-.menu > li:before {
-  content: "|";
-  padding-right: 0.3em;
-}
-
-.menu > li:nth-child(1):before {
-  content: "";
-  padding: 0;
-}
-
-
-svg{
-	background-color: #eee;
+body, input, button, select, textarea{
+    font-family: 'Roboto', "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .elements{
-	padding-bottom: 100px;
+	/* margin-bottom: 100px; */
+	overflow: auto;
+    
+	height: -webkit-calc(100% - 20px);
 }
 
 .element{
-	min-height: 100px;
-	margin: 10px;
-	background-color: yellow;
+	background-color: #e0e0e0;
+    padding: 0 2px 2px 2px;
+	border-radius: 3px;
+    margin-bottom: 20px;
+	text-align: center;
+}
+
+.element input{
+    border: 0;
+    -moz-transition: none;
+    -webkit-transition: none;
+    transition: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
+    background-color: transparent;
+    text-align: center;
+    padding: 0;
+    margin-bottom: 4px;
+}
+.element input:focus{
+    -webkit-box-shadow:none;
+    -moz-box-shadow:none;
+    box-shadow:none;
+}
+
+.element .btn-remove{
+    display: none;
+}
+.element:hover .btn-remove{
+    display:block;
+}
+
+.element .errors {
+        color: red;
+    }
+    
+.element .tag{
+    display: inline-block;
+    margin-left: 4px;
+    margin-right: 4px;
+    width: 31px;
+    height: 5px;    
+    vertical-align: top;
+}
+    .element .tag.hidden{
+        visibility: hidden;
+    }
+
+    .element .tags{
+        line-height: 5px;
+        text-align: center;
+        white-space: nowrap;
+        padding-bottom: 4px;
+    }
+
+    .tags:hover{
+        line-height: 30px;
+    }
+    
+    .element .tags:hover .tag{
+        height: 30px;
+    }
+    .element .tags:hover .tag.hidden{
+        visibility: visible;
+        height: 15px;
+    }
+
+.element-errors{
+    float:right;
 }
 
 .sortable-placeholder{
@@ -53,10 +99,20 @@ svg{
 }
 
 .zone {
-	border: 1px solid red;
+	border: 1px solid #333;
 	position: absolute;
 	background-color: white;
+    padding: 5px;
 }
+    .zone h2{
+        font-size: 1em;
+        margin: 0;
+        line-height: 120%;
+    }
+    .zone h2 .btn{
+        padding: 0;
+        text-decoration: none;
+    }
 
 .layers{
 	padding: 5px 0;
@@ -72,6 +128,38 @@ svg{
 .invalid {
     border: 2px solid red;    
 }
-.element .errors {
-    color: red;
+
+.view {
+    width: 80%;
+    position: relative;
+}
+
+.view .view-ratio{
+    padding-bottom: 69%;
+}
+
+.view .content{
+    position: absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    border: 1px solid #333;
+}
+.clear{
+    clear:both;
+}
+.rules-container{
+    width: 20%;
+    position:absolute;
+    top:0;
+    right:0;
+    bottom:0;
+    overflow:auto;
+    padding: 5px;
+}
+.rule h3{
+    font-size: 120%;
+    margin: 10px 0 0 0;
+    line-height: 120%;
 }

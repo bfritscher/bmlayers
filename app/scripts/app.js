@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('bmlayersApp', [])
+angular.module('bmlayersApp', ['ui.bootstrap'])
   .config(function ($routeProvider) {
     $routeProvider
       .when('/', {
