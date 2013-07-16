@@ -36,7 +36,7 @@ var bmc = {
 };
 
 angular.module('bmlayersApp')
-  .controller('MainCtrl', function ($scope, $timeout, Rules, layers) {
+  .controller('MainCtrl', function ($scope, $timeout, Rules, layers, filterFilter) {
 	
     $scope.layers = layers;
 	
@@ -78,7 +78,7 @@ angular.module('bmlayersApp')
 			}
 		}
 		return attributes;
-	}
+	}   
     
     $scope.toggleTag = function(e, tag){
         var idx = e.tags.indexOf(tag.id);
@@ -263,8 +263,10 @@ angular.module('bmlayersApp')
 		]
 	};
     
-    $scope.displayRuleCategory = function(cat){
+    $scope.displayRuleCategory = function(cat, first){
         var display = cat !== $scope.currentRuleCategory;
+        if(first){ display = true;}
+        
         $scope.currentRuleCategory = cat;
         return display;
     }
@@ -292,6 +294,16 @@ angular.module('bmlayersApp')
             
     $scope.$watch('model', function(){Rules.checkAll($scope.model);}, true);
     $scope.$watch('layers', function(){Rules.checkAll($scope.model);}, true);
+    
+    $scope.errorFilter = 'ok';
+    $scope.errorFilterStates = {
+        'actif': {active:'true'},
+        'ok': {active:'true', valid: 'true'},
+        'nok': {active:'true', valid: 'false'},
+        'inactif': {active:'false'}
+    };
+    $scope.Rules = Rules;
     $scope.rules = Rules.rules();
+
 
   });

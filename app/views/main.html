@@ -33,11 +33,15 @@ Layers
     </div>
 </div>
 <div class="rules-container">
-    <div class="rule" ng-repeat="rule in rules">
-        <h3 ng-if="displayRuleCategory(rule.category)" ng-bind="rule.category | i18n"></h3>
+    <ul class="nav nav-tabs">
+      <li ng-class="{active: errorFilter=='ok'}"><a href ng-click="errorFilter='ok'">Ok <span class="badge badge-success" ng-bind="Rules.counts.ok"></span></a></li>
+      <li ng-class="{active: errorFilter=='nok'}"><a href ng-click="errorFilter='nok'">NOk <span class="badge badge-important" ng-bind="Rules.counts.nok"></span></a></li>
+      <li ng-class="{active: errorFilter=='inactif'}"><a href ng-click="errorFilter='inactif'">Inactif <span class="badge" ng-bind="Rules.counts.inactif"></span></a></li>
+    </ul>
+    <div class="rule" ng-repeat="rule in rules  | filter:errorFilterStates[errorFilter]">
+        <h3 ng-if="displayRuleCategory(rule.category, $first)" ng-bind="rule.category | i18n"></h3>
         <input type="checkbox" ng-checked="rule.valid" ng-disabled="!rule.active"/> {{rule.title}}
         <div ng-repeat="error in rule.errors" class="text-error">{{error.obj.name}}</div>
-        
     </div>
 </div>
 <!--

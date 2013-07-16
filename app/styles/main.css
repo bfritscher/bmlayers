@@ -95,6 +95,9 @@ body, input, button, select, textarea{
         visibility: visible;
         height: 15px;
     }
+    .element .tag:hover{
+        cursor:pointer;
+    }
 
 .element-errors{
     float:right;

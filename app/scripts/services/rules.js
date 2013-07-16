@@ -146,8 +146,8 @@ angular.module('bmlayersApp')
                 when: 'always',
                 trigger: function(){return true;},
                 rule: function(rule){
-                    unUsedTags.forEach(function(t){
-                       rule.addError({name:t});
+                    unUsedTags.forEach(function(tagId){
+                       rule.addError({name: layers.tags.tags[tagId.substr(1)].name});
                     });
                 }
             }),
@@ -369,17 +369,35 @@ angular.module('bmlayersApp')
 
     // Public API here
     return {
+      counts: {
+          'actif': 0,
+          'ok': 0,
+          'nok': 0,
+          'inactif': 0
+      },
       checkAll: function(m){
           var points = 0;
+          var self = this;
           model = m;
           //reset errors on elements
           model.elements.forEach(function(e){
               e.errors = [];
-          });        
+          });
+          this.counts = {
+              'actif': 0,
+              'ok': 0,
+              'nok': 0,
+              'inactif': 0
+          };
           
           if(layers.errors.visible){
               //precalculate data structure which can be used by rules
-              unUsedTags = layers.tags.tags.reduce(function(l, t){l.push(t.name);return l;}, []);
+              unUsedTags = layers.tags.tags.filter(function(l){
+                  return l.name != '';
+                }).reduce(function(l, t){
+                    l.push(t.id);
+                    return l;
+              }, []);
               elementsByTags = {};
               elementsByTypes = {};
               layers.bmo.attributes[0].values.forEach(function(type){
@@ -415,8 +433,20 @@ angular.module('bmlayersApp')
                
               //process rules
               this.rules().forEach(function(rule){
-                  rule.check(); 
+                  rule.check();
+                  if(rule.active){
+                      self.counts.actif++;
+                      if(rule.valid){
+                          self.counts.ok++;
+                      } else {
+                          self.counts.nok++;
+                      }    
+                  }else{
+                      self.counts.inactif++;
+                  }
+                  
               });
+              
           }
       },
       rules: function(){
