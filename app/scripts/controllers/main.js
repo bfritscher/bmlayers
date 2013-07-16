@@ -56,6 +56,10 @@ angular.module('bmlayersApp')
 		};
 	}
 	
+    $scope.formatErrors = function(es){
+        return es.reduce(function(s, e){ return s + "\n - " + e}, "");
+    };
+    
 	$scope.activeLayerAttributes = function(e){
 		var attributes = [];
 		for(var id in $scope.layers){
@@ -77,11 +81,11 @@ angular.module('bmlayersApp')
 	}
     
     $scope.toggleTag = function(e, tag){
-        var idx = e.tags.indexOf(tag.name);
+        var idx = e.tags.indexOf(tag.id);
         if(idx >=0){
              e.tags.splice(idx, 1);
         }else{
-            e.tags.push(tag.name);
+            e.tags.push(tag.id);
         }
     };
     
@@ -197,7 +201,7 @@ angular.module('bmlayersApp')
 				},
 				l_g1: true,
                 tags: [
-                    's3'
+                    'c0'
                 ],
 				test: {
 					state: 'testing',
@@ -228,7 +232,7 @@ angular.module('bmlayersApp')
                     type: 'dc'
                 },
                 tags:[
-                'dummy'
+                'c5'
                 ]
             },
             {
@@ -237,7 +241,7 @@ angular.module('bmlayersApp')
                     type: 'dc'
                 },
                 tags:[
-                'dummy'
+                'c5'
                 ]
             },
             {
@@ -246,7 +250,7 @@ angular.module('bmlayersApp')
                     type: 'r'
                 },
                 tags:[
-                's3'
+                'c0'
                 ]
             },
 			{

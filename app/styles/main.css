@@ -12,10 +12,10 @@ body, input, button, select, textarea{
 }
 
 .elements{
-	/* margin-bottom: 100px; */
-	overflow: auto;
-    
+	overflow-y: auto;
+    overflow-x: hidden;
 	height: -webkit-calc(100% - 20px);
+    padding: 5px;
 }
 
 .element{
@@ -26,7 +26,7 @@ body, input, button, select, textarea{
 	text-align: center;
 }
 
-.element input{
+.element input, .element textarea{
     border: 0;
     -moz-transition: none;
     -webkit-transition: none;
@@ -42,7 +42,13 @@ body, input, button, select, textarea{
     padding: 0;
     margin-bottom: 4px;
 }
-.element input:focus{
+.element textarea{
+    resize: none;
+    width: 100%;
+    overflow:hidden;
+}
+
+.element input:focus, .element textarea:focus{
     -webkit-box-shadow:none;
     -moz-box-shadow:none;
     box-shadow:none;
@@ -63,7 +69,7 @@ body, input, button, select, textarea{
     display: inline-block;
     margin-left: 4px;
     margin-right: 4px;
-    width: 31px;
+    width: 12.5%;
     height: 5px;    
     vertical-align: top;
 }
@@ -102,7 +108,6 @@ body, input, button, select, textarea{
 	border: 1px solid #333;
 	position: absolute;
 	background-color: white;
-    padding: 5px;
 }
     .zone h2{
         font-size: 1em;

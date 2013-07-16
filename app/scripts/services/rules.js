@@ -118,19 +118,20 @@ angular.module('bmlayersApp')
                 when: 'always, for all tag layers',
                 trigger: function(){return true;},
                 rule: function(rule){
-                    for(var tag in elementsByTags){
+                    for(var tagId in elementsByTags){
                         var types = [];
-                        elementsByTags[tag].forEach(function(e){
+                        elementsByTags[tagId].forEach(function(e){
                             if(e.bmo && e.bmo.type){
                                 if(types.indexOf(e.bmo.type) < 0) types.push(e.bmo.type);
                             }
                         });
                         if(types.length === 1){
-                           rule.addError({name:tag});
-                            elementsByTags[tag].forEach(function(e){
+                           var tag = layers.tags.tags[tagId.substr(1)];
+                           rule.addError({name:tag.name});
+                            elementsByTags[tagId].forEach(function(e){
                                 if(e.bmo && e.bmo.type){
                                     //TODO better??
-                                    e.errors.push(rule.fix.format(tag));
+                                    e.errors.push(rule.fix.format(tag.name));
                                 }
                             });
                         }

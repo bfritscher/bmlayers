@@ -11,12 +11,11 @@ Layers
             <div class="elements" sort>
                 <div class="element" ng-repeat="e in model.elements | filter:filterType(z.type, z.value)" ng-class="{'invalid': e.errors.length > 0}">
                     <div class="tags">
-                        <div ng-show="layers.tags.visible" ng-repeat="t in tags()" class="tag" ng-class="{hidden: e.tags.indexOf(t.name) < 0}" style="background-color:{{t.color}};" title="{{t.name}}" ng-click="toggleTag(e, t)"></div>
+                        <div ng-show="layers.tags.visible" ng-repeat="t in tags()" class="tag" ng-class="{hidden: e.tags.indexOf(t.id) < 0}" style="background-color:{{t.color}};" title="{{t.name}}" ng-click="toggleTag(e, t)"></div>
                         <div class="clear"></div>
                     </div>
-                    <span class="element-errors"><i class="icon-warning-sign text-error" ng-show="e.errors.length > 0"
-                        popover-placement="bottom" popover-trigger="mouseenter" popover="{{e.errors}}"></i></span>
-                    <input type="text" ng-model="e.name" />
+                    <div class="element-errors" popover-placement="bottom" popover-trigger="mouseenter" popover="{{formatErrors(e.errors)}}"><i class="icon-warning-sign text-error" ng-show="e.errors.length > 0"></i></div>
+                    <textarea type="text" ng-model="e.name"></textarea>
                     <!--
     TODO:foreach active layer 
     show current values, and possible new fields
@@ -24,7 +23,7 @@ Layers
                     <div ng-repeat="a in activeLayerAttributes(e)">
                         {{a.name}}
                         
-                        <input type="text" ng-model="e[a.layerId][a.name]"/>
+                        <textarea ng-model="e[a.layerId][a.name]"></textarea>
                         <select ng-model="e[a.layerId][a.name]" ng-options="v for v in a.values"></select>
                     </div>				
                     <button class="btn btn-link btn-remove" ng-click="removeElement(e)"><i class="icon-trash"></i></button>

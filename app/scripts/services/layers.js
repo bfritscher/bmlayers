@@ -24,26 +24,32 @@ angular.module('bmlayersApp')
             visible: true,
             tags:[
                 {
+                    id: 'c0',
                     name: 's3',
                     color: colors[0]
                 },
                 {
+                    id: 'c1',
                     name: 'normal',
                     color: colors[1]
                 },
                 {
+                    id: 'c2',
                     name: '',
                     color: colors[2]
                 },
                 {
+                    id: 'c3',
                     name: '',
                     color: colors[3]
                 },
                 {
+                    id: 'c4',
                     name: '',
                     color: colors[4]
                 },
                 {
+                    id: 'c5',
                     name: 'dummy',
                     color: colors[5]
                 }
