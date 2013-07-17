@@ -1,12 +1,13 @@
-Layers
-<div class="layers">
-	<div ng-repeat="(id, l) in layers" class="layer">
-	<input type="checkbox" ng-model="l.visible"/> {{l.id}}</div>
+<div class="leftnav">
+    <div class="layers">
+        <div ng-repeat="(id, l) in layers" class="layer">
+        <input type="checkbox" ng-model="l.visible"/> {{l.id}}</div>
+    </div>
 </div>
 <div class="view">
     <div class="view-ratio"></div>
     <div class="content">
-        <div  class="zone" ng-repeat="(name, z) in model.zones" ng-style="{width: z.width + '%', height: z.height + '%', top:z.top + '%', left:z.left + '%'}">
+        <div ng-mouseenter="zoom(z)" ng-mouseleave="dezoom(z)" class="zone {{name}}" ng-repeat="(name, z) in model.zones" ng-style="{width: z.width + '%', height: z.height + '%', top:z.top + '%', left:z.left + '%'}">
             <h2><button ng-click="addElementToZone(z)" class="btn btn-link"><i class="icon-plus-sign-alt icon-large"></i></button> {{name | i18n}}</h2>
             <div class="elements" sort>
                 <div class="element" ng-repeat="e in model.elements | filter:filterType(z.type, z.value)" ng-class="{'invalid': e.errors.length > 0}">
@@ -32,20 +33,20 @@ Layers
         </div>
     </div>
 </div>
-<div class="rules-container">
+<div class="rules-container" ng-show="layers.errors.visible">
     <ul class="nav nav-tabs">
       <li ng-class="{active: errorFilter=='ok'}"><a href ng-click="errorFilter='ok'">Ok <span class="badge badge-success" ng-bind="Rules.counts.ok"></span></a></li>
       <li ng-class="{active: errorFilter=='nok'}"><a href ng-click="errorFilter='nok'">NOk <span class="badge badge-important" ng-bind="Rules.counts.nok"></span></a></li>
       <li ng-class="{active: errorFilter=='inactif'}"><a href ng-click="errorFilter='inactif'">Inactif <span class="badge" ng-bind="Rules.counts.inactif"></span></a></li>
     </ul>
-    <div class="rule" ng-repeat="rule in rules  | filter:errorFilterStates[errorFilter]">
-        <h3 ng-if="displayRuleCategory(rule.category, $first)" ng-bind="rule.category | i18n"></h3>
-        <input type="checkbox" ng-checked="rule.valid" ng-disabled="!rule.active"/> {{rule.title}}
-        <div ng-repeat="error in rule.errors" class="text-error">{{error.obj.name}}</div>
+    <div class="rules">
+        <div class="rule" ng-repeat="rule in rules  | filter:errorFilterStates[errorFilter]">
+            <h3 ng-if="displayRuleCategory(rule.category, $first)" ng-bind="rule.category | i18n"></h3>
+            <i class="icon-check" ng-show="rule.valid && rule.active"></i>
+            <i class="icon-check-empty" ng-show="!rule.valid && rule.active"></i>
+            <i class="icon-sign-blank" ng-show="!rule.active"></i>
+            {{rule.title}}
+            <div ng-repeat="error in rule.errors" class="text-error">{{error.obj.name}}</div>
+        </div>
     </div>
 </div>
-<!--
-<svg xmlns="http://www.w3.org/2000/svg" canvas width="2048" height="2048" ng-dblclick="addNew()">
-
-</svg>
--->

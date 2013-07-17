@@ -22,8 +22,10 @@ body, input, button, select, textarea{
 	background-color: #e0e0e0;
     padding: 0 2px 2px 2px;
 	border-radius: 3px;
-    margin-bottom: 20px;
+    margin-bottom: 4%;
 	text-align: center;
+    position:relative;
+    float:left;
 }
 
 .element input, .element textarea{
@@ -40,7 +42,7 @@ body, input, button, select, textarea{
     background-color: transparent;
     text-align: center;
     padding: 0;
-    margin-bottom: 4px;
+    margin: 0;
 }
 .element textarea{
     resize: none;
@@ -56,14 +58,15 @@ body, input, button, select, textarea{
 
 .element .btn-remove{
     display: none;
+    float:right;
 }
 .element:hover .btn-remove{
     display:block;
 }
 
 .element .errors {
-        color: red;
-    }
+    color: red;
+}
     
 .element .tag{
     display: inline-block;
@@ -94,23 +97,32 @@ body, input, button, select, textarea{
     .element .tags:hover .tag.hidden{
         visibility: visible;
         height: 15px;
+        opacity: 0.5;
+    }
+    .element .tags:hover .tag.hidden:hover{
+        opacity: 1;
     }
     .element .tag:hover{
         cursor:pointer;
+        
     }
+    
 
 .element-errors{
-    float:right;
+    position: absolute;
+    left: 12px;
 }
 
 .sortable-placeholder{
 	background-color: red;
+    float:left;
 }
 
 .zone {
 	border: 1px solid #333;
 	position: absolute;
 	background-color: white;
+    -webkit-transition: width 0.5s  ease-in-out, left 0.5s ease-in-out,  top 0.5s ease-in-out,  height 0.5s ease-in-out, z-index 0 linear 0.5s;
 }
     .zone h2{
         font-size: 1em;
@@ -121,7 +133,11 @@ body, input, button, select, textarea{
         padding: 0;
         text-decoration: none;
     }
-
+.zone:hover {
+    z-index:1;
+    -webkit-transition: width 0.5s  ease-in-out, left 0.5s ease-in-out,  top 0.5s ease-in-out,  height 0.5s ease-in-out, z-index 0 linear 0;
+}
+   
 .layers{
 	padding: 5px 0;
 }
@@ -134,12 +150,19 @@ body, input, button, select, textarea{
 }
 
 .invalid {
-    border: 2px solid red;    
+    border: 2px solid rgba(185, 74, 72, 0.8);    
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(185, 74, 72, 0.6);
+}
+
+.leftnav {
+    width: 200px;
+    float:left;
 }
 
 .view {
-    width: 80%;
+    width: -webkit-calc(100% - 490px);
     position: relative;
+    float:left;
 }
 
 .view .view-ratio{
@@ -158,12 +181,17 @@ body, input, button, select, textarea{
     clear:both;
 }
 .rules-container{
-    width: 20%;
+    width: 290px;
     position:absolute;
     top:0;
     right:0;
     bottom:0;
     overflow:auto;
+}
+.rules-container .nav{
+    margin-bottom: 0;
+}
+.rules-container .rules{
     padding: 5px;
 }
 .rule h3{

@@ -263,6 +263,26 @@ angular.module('bmlayersApp')
 		]
 	};
     
+    $scope.zoom = function(z){
+        if(z.top > 74){
+            z.height = z.height * 2;
+            z.top = z.top - 25;
+        }else{
+            z.width = z.width * 2;
+            z.left = z.left -10;
+        }
+    };
+    $scope.dezoom = function(z){
+        if(z.top > 49){
+            z.height = z.height / 2;
+            z.top = z.top + 25;
+        }else{
+            z.width = z.width / 2;
+            z.left = z.left + 10;
+        }
+        
+    };
+    
     $scope.displayRuleCategory = function(cat, first){
         var display = cat !== $scope.currentRuleCategory;
         if(first){ display = true;}
