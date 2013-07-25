@@ -45,8 +45,12 @@
             <i class="icon-check" ng-show="rule.valid && rule.active"></i>
             <i class="icon-check-empty" ng-show="!rule.valid && rule.active"></i>
             <i class="icon-sign-blank" ng-show="!rule.active"></i>
-            {{rule.title}}
+            {{rule.title}} ({{rule.points}})
+            <a href class="btn btn-link rule-help" title="Why: {{rule.why}} When: {{rule.when}}"><i class="icon-question-sign"></i></a>
             <div ng-repeat="error in rule.errors" class="text-error">{{error.obj.name}}</div>
         </div>
+    </div>
+    <div>
+        points {{Rules.points}}
     </div>
 </div>

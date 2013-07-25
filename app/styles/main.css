@@ -23,6 +23,7 @@ body, input, button, select, textarea{
     padding: 0 2px 2px 2px;
 	border-radius: 3px;
     margin-bottom: 4%;
+    margin-left: 1.5em;
 	text-align: center;
     position:relative;
     float:left;
@@ -58,10 +59,12 @@ body, input, button, select, textarea{
 
 .element .btn-remove{
     display: none;
-    float:right;
+    position: absolute;
+    bottom: 0;
+    right: 0;
 }
 .element:hover .btn-remove{
-    display:block;
+    display: inline;
 }
 
 .element .errors {
@@ -70,8 +73,8 @@ body, input, button, select, textarea{
     
 .element .tag{
     display: inline-block;
-    margin-left: 4px;
-    margin-right: 4px;
+    margin-left: 3px;
+    margin-right: 3px;
     width: 12.5%;
     height: 5px;    
     vertical-align: top;
@@ -92,7 +95,7 @@ body, input, button, select, textarea{
     }
     
     .element .tags:hover .tag{
-        height: 30px;
+        height: 25px;
     }
     .element .tags:hover .tag.hidden{
         visibility: visible;
@@ -111,6 +114,7 @@ body, input, button, select, textarea{
 .element-errors{
     position: absolute;
     left: 12px;
+    bottom: 5px;
 }
 
 .sortable-placeholder{

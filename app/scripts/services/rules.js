@@ -6,6 +6,7 @@ angular.module('bmlayersApp')
         var unUsedTags = [];
         var elementsByTags = {};                    
         var elementsByTypes = {};
+        var elementsWithoutTags = [];
         
         var rules = {
             bmc_complete: new Rule({
@@ -14,7 +15,6 @@ angular.module('bmlayersApp')
                 category: 'model_coherence',
                 why: 'All blocks have interactions, covering all blocks strengthens the business model.',
                 when: 'model has 9 or more elements',
-                points: 10,
                 trigger: function(){
                     return model.elements.reduce(function(sum, e){
                         if(e.bmo){
@@ -25,6 +25,7 @@ angular.module('bmlayersApp')
                 },
                 rule: function(rule){
                     var types = angular.copy(layers.bmo.attributes[0].values);
+                    var points = types.length;
                     var idx = -1;
                     model.elements.forEach(function(e){
                         if(e.bmo && e.bmo.type){
@@ -34,7 +35,9 @@ angular.module('bmlayersApp')
                     });
                     types.forEach(function(t){
                        rule.addError({name:t});
+                       points--;
                     });
+                    this.points = points;
                 }
             }),
             elements_keywords: new Rule({
@@ -52,6 +55,7 @@ angular.module('bmlayersApp')
                             e.errors.push(rule.fix);
                         }
                     });
+                    rule.points = Math.floor( (model.elements.length - rule.errors.length) / model.elements.length * 10);
                 }
             }),
             bmc_customer_perspective_complete: new Rule({
@@ -69,8 +73,8 @@ angular.module('bmlayersApp')
                 }
             }),
             bmc_split_multisided: new Rule({
-                title: 'cs multisided split',
-                fix: 'Connect a customer segment with a value proposition and their channel and revenues by tagging them.',
+                title: 'Customer Segements are split into sides',
+                fix: 'Connect each value proposition wither their customer segment by tagging them into groups.',
                 category: 'model_coherence',
                 why: 'Elements have to be connected to be meaningful',
                 when: '???',
@@ -82,27 +86,46 @@ angular.module('bmlayersApp')
                     rule.addError({name:'NOT IMPLEMENTED'});
                 }
             }),
+            //TODO: rule if there are no tags? and more than n in same type?
             bmc_vp_detail_level: new Rule({
-                title: 'vp detail level',
-                fix: 'Connect a customer segment with a value proposition and their channel and revenues by tagging them.',
+                title: 'Value Proposition detail level',
+                fix: 'Check if all the Value Proposition are value proposition or features of a borader vp.',
                 category: 'model_coherence',
-                why: 'Elements have to be connected to be meaningful',
-                when: '???',
-                trigger: function(){return true;},//'layer.bmo.count > 3?',
+                why: 'Value proposition should be more than a list of product features',
+                when: 'more than 3 value propositions and at least one customer segment',
+                trigger: function(){
+                    return elementsByTypes['vp'].length > 3 && elementsByTypes['cs'].length > 0;
+                },
                 rule: function(rule){
-                    model.elements.forEach(function(e){
-         
-                    });
-                    rule.addError({name:'NOT IMPLEMENTED'});
+                    function checkList(list){
+                        var vp = [];
+                        list.forEach(function(e){
+                            if(e.bmo && e.bmo.type === 'vp'){
+                                vp.push(e);
+                            }
+                        });
+                        if(vp.length > 3){
+                            vp.forEach(function(e){
+                                rule.addError(e);
+                                e.errors.push(rule.fix);
+                            });
+                        }
+                    }
+                    for(var tagId in elementsByTags){
+                        checkList(elementsByTags[tagId]);
+                    }
+                    checkList(elementsWithoutTags);
                 }
             }),
             bmc_vp_produced: new Rule({
-                title: 'vp produced',
-                fix: 'Connect a customer segment with a value proposition and their channel and revenues by tagging them.',
+                title: 'Value Proposition is produced',
+                fix: 'Connect activity, resource or partner which are required to produce this vp',
                 category: 'model_coherence',
-                why: 'Elements have to be connected to be meaningful',
-                when: '???',
-                trigger: function(){return true;},//'layer.bmo.count > 3?',
+                why: 'VP has to be generated',
+                when: 'when vp >0',
+                trigger: function(){
+                    return elementsByTypes['vp'].length > 0;
+                },
                 rule: function(rule){
                     model.elements.forEach(function(e){
          
@@ -142,12 +165,15 @@ angular.module('bmlayersApp')
                 title: 'There are no unused tags',
                 fix: 'Delete or use tag.',
                 category: 'model_coherence',
-                why: '???',
+                why: 'Forgot to use a defined tag',
                 when: 'always',
                 trigger: function(){return true;},
                 rule: function(rule){
                     unUsedTags.forEach(function(tagId){
-                       rule.addError({name: layers.tags.tags[tagId.substr(1)].name});
+                        var tag = layers.tags.tags[tagId.substr(1)];
+                        if(tag.name != ''){
+                            rule.addError({name: tag.name});
+                        }
                     });
                 }
             }),
@@ -190,6 +216,7 @@ angular.module('bmlayersApp')
                     }
                 }
             }),
+            /*
             help_split_cs: new Rule({
                 title: 'CS only 1?',
                 fix: 'split?',
@@ -201,6 +228,7 @@ angular.module('bmlayersApp')
                      rule.addError({name:'NOT IMPLEMENTED'});
                 }
             }),
+            */
             add_detail_cs: new Rule({
                 title: 'Customer segment has a size.',
                 fix: 'Add a size to the customer segment.',
@@ -375,8 +403,9 @@ angular.module('bmlayersApp')
           'nok': 0,
           'inactif': 0
       },
+      points: 0,
       checkAll: function(m){
-          var points = 0;
+          this.points = 0;
           var self = this;
           model = m;
           //reset errors on elements
@@ -399,13 +428,14 @@ angular.module('bmlayersApp')
                     return l;
               }, []);
               elementsByTags = {};
+              elementsWithoutTags = [];
               elementsByTypes = {};
               layers.bmo.attributes[0].values.forEach(function(type){
                   elementsByTypes[type] = [];
               });
               
               model.elements.forEach(function(e){
-                  if(e.tags){
+                  if(e.tags && e.tags.length > 0){
                       e.tags.forEach(function(t){
                           var idx = unUsedTags.indexOf(t);
                           if(idx >= 0) unUsedTags.splice(idx, 1);
@@ -417,6 +447,8 @@ angular.module('bmlayersApp')
                           es.push(e);
                           elementsByTags[t] = es;
                       });
+                  }else{
+                      elementsWithoutTags.push(e);
                   }
                   
                   if(e.bmo && e.bmo.type){
@@ -440,7 +472,8 @@ angular.module('bmlayersApp')
                           self.counts.ok++;
                       } else {
                           self.counts.nok++;
-                      }    
+                      }
+                      self.points += rule.points;
                   }else{
                       self.counts.inactif++;
                   }
@@ -488,6 +521,8 @@ Rule.prototype.check = function(){
         this.errors = [];
         this.rule(this);
         this.valid =  this.errors.length == 0;
+        //by default set top 10 points if valid
+        if(this.valid && this.points === 0) this.points = 10;
     }
     return this.valid;
 };
