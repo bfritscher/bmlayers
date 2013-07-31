@@ -390,6 +390,10 @@ angular.module('bmlayersApp')
                 trigger: function(){return true;},
                 rule: function(rule){
                     //Count of partner and connected to which products % total
+                    //elements at rate place
+                    //elements in addition
+                    //elements missing
+                    //element in right layers/tags
                     rule.addError({name:'NOT IMPLEMENTED'});
                 }
             })

@@ -38,6 +38,8 @@ var bmc = {
 angular.module('bmlayersApp')
   .controller('MainCtrl', function ($scope, $timeout, Rules, layers, filterFilter) {
 	
+	$scope.z = {type:'bmo.type', value:'cs'};
+	
     $scope.layers = layers;
 	
 	$scope.filterType = function(type, value){
@@ -46,6 +48,9 @@ angular.module('bmlayersApp')
 			var typenoequal = type.replace("==","").replace("!=","");
 			if(typenoequal.indexOf('=') >= 0) return false;
 			*/
+            if(type === '' && value === ''){
+                return true;
+            }
 			try{
 				return eval('e.' + type) == value;
 			}

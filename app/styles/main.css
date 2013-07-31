@@ -159,12 +159,12 @@ body, input, button, select, textarea{
 }
 
 .leftnav {
-    width: 200px;
+    width: 180px;
     float:left;
 }
 
 .view {
-    width: -webkit-calc(100% - 490px);
+    width: -webkit-calc(100% - 470px);
     position: relative;
     float:left;
 }

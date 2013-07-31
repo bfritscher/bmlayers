@@ -3,6 +3,13 @@
         <div ng-repeat="(id, l) in layers" class="layer">
         <input type="checkbox" ng-model="l.visible"/> {{l.id}}</div>
     </div>
+        <input type="text" ng-model="z.type" class="input-small"/>
+        <input type="text" ng-model="z.value" class="input-small" />
+    <div class="elements" sort>
+        <div class="element" ng-repeat="e in model.elements | filter:filterType(z.type, z.value)" ng-class="{'invalid': e.errors.length > 0}">
+        {{e.name}}
+        </div>
+    </div>
 </div>
 <div class="view">
     <div class="view-ratio"></div>
