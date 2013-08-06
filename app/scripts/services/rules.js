@@ -540,6 +540,10 @@ Rule.prototype.addError = function addError(obj){
     this.errors.push(new RuleFail(this, obj));
 };
 
+Rule.prototype.isNotImplemented = function (){
+    return this.errors[0] && this.errors[0].obj.name == 'NOT IMPLEMENTED';
+};
+
 //first, checks if it isn't implemented yet
 if (!String.prototype.format) {
   String.prototype.format = function() {

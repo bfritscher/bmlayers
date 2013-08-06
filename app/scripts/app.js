@@ -7,6 +7,10 @@ angular.module('bmlayersApp', ['ui.bootstrap'])
         templateUrl: 'views/main.html',
         controller: 'MainCtrl'
       })
+      .when('/rules', {
+        templateUrl: 'views/rules.html',
+        controller: 'MainCtrl'
+      })
       .otherwise({
         redirectTo: '/'
       });

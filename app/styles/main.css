@@ -141,6 +141,7 @@ body, input, button, select, textarea{
     z-index:1;
     -webkit-transition: width 0.5s  ease-in-out, left 0.5s ease-in-out,  top 0.5s ease-in-out,  height 0.5s ease-in-out, z-index 0 linear 0;
 }
+
    
 .layers{
 	padding: 5px 0;
@@ -202,4 +203,26 @@ body, input, button, select, textarea{
     font-size: 120%;
     margin: 10px 0 0 0;
     line-height: 120%;
+}
+
+tr.rule-cat > td{
+	padding-top: 4em;	
+}
+.rules-list {
+	margin: 40px;
+}
+.rules-list h4{
+	margin-top: 0;
+}
+.rules-list td{
+	vertical-align: top;
+	padding-right: 3em;
+	padding-bottom: 1em;
+}
+.rules-list th{
+	padding-bottom: 1em;
+}
+.rules-list .notimp{
+	color: red;
+}
 }

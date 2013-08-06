@@ -1,0 +1,20 @@
+<div class="rules-list">
+<h2>Rules</h2>
+<table>
+    <tr>
+        <th>Category</th>
+        <th>title</th>
+        <th>why</th>
+        <th>when</th>
+        <th>fix</th>
+    </tr>
+    <tr ng-class="{'rule-cat': displayRuleCategory(rule.category, $first) && !$first, 'notimp': rule.isNotImplemented()}" ng-repeat="rule in rules">
+        
+        <td><h4 ng-if="displayRuleCategory(rule.category, $first)" ng-bind="rule.category | i18n"></h4></td>
+        <td>{{rule.title}}</td>
+        <td>{{rule.why}}</td>
+        <td>{{rule.when}}</td>
+        <td>{{rule.fix}}</td>
+    </tr>
+</table>
+</div>
