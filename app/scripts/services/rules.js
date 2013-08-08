@@ -1,12 +1,13 @@
 'use strict';
 
 angular.module('bmlayersApp')
-  .factory('Rules', function (layers) {
+  .factory('Rules', function (layers, $filter) {
         var model;
         var unUsedTags = [];
         var elementsByTags = {};                    
         var elementsByTypes = {};
         var elementsWithoutTags = [];
+        var bmoTypeToZoneKey = {};
         
         var rules = {
             bmc_complete: new Rule({
@@ -60,16 +61,79 @@ angular.module('bmlayersApp')
             }),
             bmc_customer_perspective_complete: new Rule({
                 title: 'Customer Perspective parts are complete.',
-                fix: 'Connect a customer segment with a value proposition and their channel and revenues by tagging them.',
+                fix: 'Connect a customer segment with a value proposition and their channel and revenues by tagging them with {0}.',
                 category: 'model_coherence',
                 why: 'Elements have to be connected to be meaningful',
-                when: '???',
-                trigger: function(){return true;},//'layer.bmo.count > 3?',
+                when: 'At least two different types of any(vp, cs, r, dc, cr)',
+                trigger: function(){
+                    for(var tagId in elementsByTags){
+                        if(this._triggerLayer(tagId)) return true;
+                    }
+                    return false;
+                },
+                _triggerLayer: function(tagId){
+                    var watchedTypes = ['cs','vp','r','dc','cr'];
+                    var types = [];
+                    for(var i=0; i< elementsByTags[tagId].length; i++){
+                        var e = elementsByTags[tagId][i];
+                        if(e.hasOwnProperty('bmo') && watchedTypes.indexOf(e.bmo.type) >= 0 && types.indexOf(e.bmo.type) === -1){
+                            types.push(e.bmo.type);
+                        }
+                        if(types.length > 1){
+                            return true;
+                        }
+                    };  
+                    return false
+                },
+                _requiredTypes: ['cs','vp','r'],
+                _optionalTypes: ['dc','cr'],
                 rule: function(rule){
-                    model.elements.forEach(function(e){
-         
-                    });
-                    rule.addError({name:'NOT IMPLEMENTED'});
+                    var totalPoints = 0;
+                    var tagIds = {};
+                    var tagCount = 0;
+                    for(var tagId in elementsByTags){
+                        if( this._triggerLayer(tagId) ){
+                            tagIds[tagId] = true;
+                            tagCount++;
+                        }
+                    }
+                    for(var tagId in tagIds){
+                        var requiredTypes = angular.copy(this._requiredTypes);
+                        var optionalTypes = angular.copy(this._optionalTypes);
+                        var points = 8;
+                        for(var i=0; i<  elementsByTags[tagId].length; i++){
+                            var e = elementsByTags[tagId][i];
+                            var idx = requiredTypes.indexOf(e.bmo.type);
+                            if(e.hasOwnProperty('bmo') && idx >= 0){
+                                requiredTypes.splice(idx, 1);
+                            }
+                            idx = optionalTypes.indexOf(e.bmo.type);
+                            if(e.hasOwnProperty('bmo') && idx >= 0){
+                                optionalTypes.splice(idx, 1);
+                            }
+                        };
+                        if(requiredTypes.length > 0){
+                            points = 0;
+                            var tag = layers.tags.tags[tagId.substr(1)];                            
+                                                        
+                            rule.addError({name:tag.name + " missing: " +
+                                requiredTypes.reduce(function(x, t){ return x + " " + $filter('i18n')(bmoTypeToZoneKey[t]);}, "") +
+                                " optional: " + optionalTypes.reduce(function(x, t){ return x + " " + $filter('i18n')(bmoTypeToZoneKey[t]);}, "")
+                                
+                            });
+                            //addError to All elements
+                            elementsByTags[tagId].forEach(function(e){
+                                if(e.bmo && e.bmo.type){
+                                    //TODO better??
+                                    e.errors.push(rule.fix.format(tag.name));
+                                }
+                            });
+                            
+                        }
+                        points += 2 - optionalTypes.length;
+                        totalPoints += points / tagCount; 
+                    }
+                    this.points = Math.floor(totalPoints);
                 }
             }),
             bmc_split_multisided: new Rule({
@@ -422,6 +486,14 @@ angular.module('bmlayersApp')
               'nok': 0,
               'inactif': 0
           };
+          
+          bmoTypeToZoneKey = {};
+          for(var key in model.zones){
+              var zone = model.zones[key];
+              if(zone.type = 'bmo.type'){
+                bmoTypeToZoneKey[zone.value] = key;
+              }
+          }
           
           if(layers.errors.visible){
               //precalculate data structure which can be used by rules
