@@ -50,7 +50,7 @@ angular.module('bmlayersApp')
                 trigger: function(){return true;},
                 rule: function(rule){
                     model.elements.forEach(function(e){
-                        if(e.name.split(' ').length > 4){
+                        if(e.name.split(' ').length > 5){
                             rule.addError(e);
                             //TODO better??
                             e.errors.push(rule.fix);
