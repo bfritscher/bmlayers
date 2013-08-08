@@ -301,6 +301,14 @@ angular.module('bmlayersApp')
             z.zoomed = false;
         }
     };
+	
+	$scope.importJson = function(){
+		try{
+			$scope.model.elements = JSON.parse($scope.importJsonSrc);
+		}catch(e){
+			console.log(e);
+		}
+	}
     
     $scope.displayRuleCategory = function(cat, first){
         var display = cat !== $scope.currentRuleCategory;
