@@ -36,7 +36,7 @@ var bmc = {
 };
 
 angular.module('bmlayersApp')
-  .controller('MainCtrl', function ($scope, $timeout, Rules, layers, filterFilter) {
+  .controller('MainCtrl', function ($scope, $timeout, Rules, layers, filterFilter, localStorageService) {
 	
 	$scope.z = {type:'bmo.type', value:'cs'};
 	
@@ -267,6 +267,15 @@ angular.module('bmlayersApp')
 			}
 		]
 	};
+    
+    var elements = localStorageService.get('elements');
+	if(elements != "null"){
+		$scope.model.elements = elements;
+	}
+	$scope.$watch('model.elements', function(){
+		 localStorageService.add('elements', $scope.model.elements);
+	}, true);
+    
     
     $scope.zoom = function(z){
         if(!z.zoomed){

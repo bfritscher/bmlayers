@@ -13,7 +13,8 @@
     "angular-resource": "PatternConsulting/bower-angular",
     "angular-cookies": "PatternConsulting/bower-angular",
     "angular-sanitize": "PatternConsulting/bower-angular",
-	"angular-ui-bootstrap-bower": "latest"
+	"angular-ui-bootstrap-bower": "latest",
+	"angular-localstorage": "latest"
   },
   "devDependencies": {
     "angular-mocks": "PatternConsulting/bower-angular",

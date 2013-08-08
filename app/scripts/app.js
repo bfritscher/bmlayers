@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('bmlayersApp', ['ui.bootstrap'])
+angular.module('bmlayersApp', ['ui.bootstrap', 'LocalStorageModule'])
   .config(function ($routeProvider) {
     $routeProvider
       .when('/', {
@@ -15,3 +15,4 @@ angular.module('bmlayersApp', ['ui.bootstrap'])
         redirectTo: '/'
       });
   });
+angularLocalStorage.value('prefix', 'bmlayers');
