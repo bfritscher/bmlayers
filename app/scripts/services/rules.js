@@ -8,6 +8,7 @@ angular.module('bmlayersApp')
         var elementsByTypes = {};
         var elementsWithoutTags = [];
         var bmoTypeToZoneKey = {};
+        var tagsSubsets = {};
         
         var rules = {
             bmc_complete: new Rule({
@@ -232,6 +233,26 @@ angular.module('bmlayersApp')
                     rule.addError({name:'NOT IMPLEMENTED'});
                 }
             }),
+            tag_not_same: new Rule({
+                title: 'Elements with tags form a distinct set',
+                fix: 'Tag, untag elements, merge tag labels',
+                category: 'model_coherence',
+                why: 'Same set should have same label',
+                when: 'always',
+                trigger: function(){
+                    return true;
+                },
+                rule: function(rule){
+                    for(var tagId in tagsSubsets){
+                        var list = tagsSubsets[tagId]
+                        for(var i=0; i< list.length; i++){
+                            if(tagsSubsets.hasOwnProperty(list[i]) && tagsSubsets[list[i]].indexOf(tagId) >=0){
+                                rule.addError({name: layers.tags.tags[tagId.substr(1)].name + ' is identical to ' + layers.tags.tags[list[i].substr(1)].name});
+                            }
+                        }
+                    }                    
+                }
+            }),
             bmc_tag_not_block: new Rule({
                 title: 'Tags are used to connect blocks.',
                 fix: 'Add tag {0} to elements in other blocks.',
@@ -249,7 +270,7 @@ angular.module('bmlayersApp')
                         });
                         if(types.length === 1){
                            var tag = layers.tags.tags[tagId.substr(1)];
-                           rule.addError({name:tag.name});
+                           rule.addError({name: tag.name + " only in " +  $filter('i18n')(bmoTypeToZoneKey[types[0]])});
                             elementsByTags[tagId].forEach(function(e){
                                 if(e.bmo && e.bmo.type){
                                     //TODO better??
@@ -313,6 +334,22 @@ angular.module('bmlayersApp')
                     if(!(elementsByTypes.r.length > 0 && elementsByTypes.c.length > 0)){
                         rule.addError({name: 'No Financial!'});
                     }
+                }
+            }),
+            tags_are_subset: new Rule({
+                title: 'Tags is a subet of another tag',
+                fix: 'Check if being a subset makes sense',
+                category: 'help',
+                why: '???',
+                when: 'always',
+                trigger: function(){ return true;},
+                rule: function(rule){
+                    for(var tagId in tagsSubsets){
+                        var list = tagsSubsets[tagId]
+                        for(var i=0; i< list.length; i++){
+                            rule.addError({name: layers.tags.tags[list[i].substr(1)].name + ' is subset of ' + layers.tags.tags[tagId.substr(1)].name});
+                        }
+                    }              
                 }
             }),
             use_tags: new Rule({
@@ -527,6 +564,13 @@ angular.module('bmlayersApp')
                 }
             })
         };
+        
+        function isSubset(listA, listB){
+          //true if all of B is found in A
+          return listB.every(function(e){
+              return listA.indexOf(e) >= 0;
+          });
+        }
 
     // Public API here
     return {
@@ -604,7 +648,26 @@ angular.module('bmlayersApp')
                   }
                   
               });
-
+              
+              //calculate subset
+              tagsSubsets = {};
+              for(var tagId in elementsByTags){
+                  var listA = elementsByTags[tagId];
+                  if(listA.length > 0){
+                    for(var tagId2 in elementsByTags){
+                        var listB = elementsByTags[tagId2];
+                        if(listB.length > 0 && tagId != tagId2){
+                            if(isSubset(listA, listB)){
+                                if(!tagsSubsets.hasOwnProperty(tagId)){
+                                    tagsSubsets[tagId] = [];
+                                }
+                                tagsSubsets[tagId].push(tagId2);
+                            }
+                        }
+                    }
+                  }
+              }
+            console.log(tagsSubsets);
                
               //process rules
               this.rules().forEach(function(rule){
