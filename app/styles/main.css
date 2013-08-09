@@ -70,6 +70,10 @@ body, input, button, select, textarea{
 .element .errors {
     color: red;
 }
+
+.zone.zoomed .element{
+	margin-left: 1.3em;
+}
     
 .element .tag{
     display: inline-block;
@@ -224,5 +228,4 @@ tr.rule-cat > td{
 }
 .rules-list .notimp{
 	color: red;
-}
 }
