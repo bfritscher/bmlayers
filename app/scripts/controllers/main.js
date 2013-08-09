@@ -277,8 +277,8 @@ angular.module('bmlayersApp')
 	}, true);
     
     
-    $scope.zoom = function(z){
-        if(!z.zoomed){
+    $scope.zoom = function(z, elements){
+        if(!z.zoomed && ((z.value != 'cs' && z.value != 'pn' && z.value != 'vp' && elements.length > 4) || elements.length > 7)){
             if(z.top > 74){
                 z.height = z.height * 2;
                 z.top = z.top - 25;

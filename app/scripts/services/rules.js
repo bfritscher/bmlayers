@@ -35,7 +35,7 @@ angular.module('bmlayersApp')
                         }
                     });
                     types.forEach(function(t){
-                       rule.addError({name:t});
+                       rule.addError({name: $filter('i18n')(bmoTypeToZoneKey[t])});
                        points--;
                     });
                     this.points = points;
@@ -43,7 +43,7 @@ angular.module('bmlayersApp')
             }),
             elements_keywords: new Rule({
                 title: 'Elements are keywords',
-                fix: 'Rewrite title as keywords',
+                fix: 'Rewrite title as keyword',
                 category: 'model_coherence',
                 why: 'Model is more legible with keywords instead of sentences.',
                 when: 'always',
@@ -51,6 +51,24 @@ angular.module('bmlayersApp')
                 rule: function(rule){
                     model.elements.forEach(function(e){
                         if(e.name.split(' ').length > 5){
+                            rule.addError(e);
+                            //TODO better??
+                            e.errors.push(rule.fix);
+                        }
+                    });
+                    rule.points = Math.floor( (model.elements.length - rule.errors.length) / model.elements.length * 10);
+                }
+            }),
+            elements_have_names: new Rule({
+                title: 'Elements all have names',
+                fix: 'Rewrite title as keyword',
+                category: 'model_coherence',
+                why: 'Element should identify something',
+                when: 'always',
+                trigger: function(){return true;},
+                rule: function(rule){
+                    model.elements.forEach(function(e){
+                        if(e.name === '' || e.name === 'New...'){
                             rule.addError(e);
                             //TODO better??
                             e.errors.push(rule.fix);
@@ -141,16 +159,33 @@ angular.module('bmlayersApp')
                 fix: 'Connect each value proposition wither their customer segment by tagging them into groups.',
                 category: 'model_coherence',
                 why: 'Elements have to be connected to be meaningful',
-                when: '???',
-                trigger: function(){return true;},//'layer.bmo.count > 3?',
+                when: 'more than 2 vp and 2 cs',
+                trigger: function(){
+                    return elementsByTypes['vp'].length > 2 && elementsByTypes['cs'].length > 2;
+                },
                 rule: function(rule){
-                    model.elements.forEach(function(e){
-         
-                    });
-                    rule.addError({name:'NOT IMPLEMENTED'});
+                    function checkList(list, tag){
+                        var vp = [];
+                        var cs = [];
+                        list.forEach(function(e){
+                            if(e.bmo && e.bmo.type === 'vp'){
+                                vp.push(e);
+                            }
+                            else if(e.bmo && e.bmo.type === 'cs'){
+                                cs.push(e);
+                            }
+                        });
+                        if(cs.length > 2 || vp.length > 2){
+                            rule.addError({name: tag + ' Identify customer sides'});
+                            //TODO add error to elements also?
+                        }
+                    }
+                    for(var tagId in elementsByTags){
+                        checkList(elementsByTags[tagId], layers.tags.tags[tagId.substr(1)].name);
+                    }
+                    checkList(elementsWithoutTags, 'no tag');
                 }
             }),
-            //TODO: rule if there are no tags? and more than n in same type?
             bmc_vp_detail_level: new Rule({
                 title: 'Value Proposition detail level',
                 fix: 'Check if all the Value Proposition are value proposition or features of a borader vp.',
@@ -280,6 +315,36 @@ angular.module('bmlayersApp')
                     }
                 }
             }),
+            use_tags: new Rule({
+                title: 'Tags should be used',
+                fix: 'Group elements with tags',
+                category: 'help',
+                why: 'Structure business model',
+                when: 'more than 3 elements without tags',
+                trigger: function(){
+                    return elementsWithoutTags.length > 3;
+                },
+                rule: function(rule){
+                    var types = {};
+                    elementsWithoutTags.forEach(function(e){
+                        if(e.bmo && e.bmo.type){
+                            if(types.hasOwnProperty(e.bmo.type)){
+                                types[e.bmo.type].push(e);
+                            }else{
+                                types[e.bmo.type] = [e];
+                            }
+                        }
+                    });
+                    for(var type in types){
+                        if(types[type].length > 3){
+                            types[type].forEach(function(e){
+                                rule.addError(e);
+                                e.errors.push(rule.fix);
+                            });
+                        }
+                    }
+                }
+            }),            
             /*
             help_split_cs: new Rule({
                 title: 'CS only 1?',
@@ -494,6 +559,8 @@ angular.module('bmlayersApp')
                 bmoTypeToZoneKey[zone.value] = key;
               }
           }
+          //TODO fix?
+          this.bmoTypeToZoneKey = bmoTypeToZoneKey;
           
           if(layers.errors.visible){
               //precalculate data structure which can be used by rules
