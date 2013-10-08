@@ -28,7 +28,7 @@ var l_g1 = {
 
 }
 
-var colors = ['#34b27d','#dbdb57', '#e09952', '#cb4d4d', '#93c', '#4d77cb'];
+var colors = ['#34b27d','#dbdb57', '#e09952', '#cb4d4d', '#9933cc', '#4d77cb'];
 
 var bmc = {
     width: 100,
@@ -327,6 +327,34 @@ angular.module('bmlayersApp')
           addProperty(e, zone.type, zone.value);
           $scope.model.elements.push(e);
     };
+	
+	function tagById(id){
+		var tag;
+		for(var i=0; i < $scope.layers.tags.tags.length; i++){
+			tag = $scope.layers.tags.tags[i];
+			if(tag.id === id) return tag;
+		}
+	}
+	
+	function hexToRgba(hex, a) {
+		var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+		return 'rgba(' + parseInt(result[1], 16) + ',' + parseInt(result[2], 16) + ',' + parseInt(result[3], 16) + ', ' + a +')';
+	}
+	
+	$scope.elementStyle = function (element){
+		var styles = 'background: linear-gradient(135deg',
+		increment = element.tags.length -1 > 0 ? 100 / (element.tags.length -1) : 0;
+		element.tags.forEach(function(id, index){
+			var offset = index * increment;
+			styles +=',' + hexToRgba(tagById(id).color, 0.5) + ' ' + offset + '%';
+		});
+		if(element.tags.length === 1){
+			styles += ',' + hexToRgba(tagById(element.tags[0]).color, 0.5) + ' 100%';
+		}
+		styles +=');';
+		
+		return styles;
+	};
     
     function addProperty(obj, properties, value){
         properties = properties.split('.');

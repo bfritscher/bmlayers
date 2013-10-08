@@ -12,8 +12,6 @@ body, input, button, select, textarea{
 }
 
 .elements{
-	overflow-y: auto;
-    overflow-x: hidden;
 	height: -webkit-calc(100% - 20px);
     padding: 5px;
 }

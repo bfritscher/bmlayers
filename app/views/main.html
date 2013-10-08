@@ -19,7 +19,7 @@
         <div ng-mouseenter="zoom(z, filteredElements)" ng-mouseleave="dezoom(z)" class="zone {{name}}" ng-class="{'zoomed':z.zoomed}" ng-repeat="(name, z) in model.zones" ng-style="{width: z.width + '%', height: z.height + '%', top:z.top + '%', left:z.left + '%'}">
             <h2><button ng-click="addElementToZone(z)" class="btn btn-link"><i class="icon-plus-sign-alt icon-large"></i></button> {{name | i18n}}</h2>
             <div class="elements" sort>
-                <div class="element" ng-repeat="e in filteredElements = (model.elements | filter:filterType(z.type, z.value))" ng-class="{'invalid': e.errors.length > 0}">
+                <div class="element" style="{{elementStyle(e)}}" ng-repeat="e in filteredElements = (model.elements | filter:filterType(z.type, z.value))" ng-class="{'invalid': e.errors.length > 0}">
                     <div class="tags">
                         <div ng-show="layers.tags.visible" ng-repeat="t in tags()" class="tag" ng-class="{hidden: e.tags.indexOf(t.id) < 0}" style="background-color:{{t.color}};" title="{{t.name}}" ng-click="toggleTag(e, t)"></div>
                         <div class="clear"></div>
