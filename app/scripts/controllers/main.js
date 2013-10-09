@@ -275,6 +275,11 @@ angular.module('bmlayersApp')
 	$scope.$watch('model.elements', function(){
 		 localStorageService.add('elements', $scope.model.elements);
 	}, true);
+	
+	$scope.model.curves = localStorageService.get('curves') || [];
+	$scope.$watch('model.curves', function(){
+		 localStorageService.add('curves', $scope.model.curves);
+	}, true);
     
     
     $scope.zoom = function(z, elements){
@@ -327,6 +332,10 @@ angular.module('bmlayersApp')
           addProperty(e, zone.type, zone.value);
           $scope.model.elements.push(e);
     };
+	
+	$scope.addCurve = function (){
+		$scope.model.curves.push({points: [{x: 10, y: 250}, {x: 0, y: 0}, {x: 200, y: 250}, {x: 250, y: 250}]});
+	};
 	
 	function tagById(id){
 		var tag;

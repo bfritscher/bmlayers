@@ -12,10 +12,13 @@
     </div>
     <textarea ng-model="importJsonSrc" placeholder="JSON"></textarea>
     <button class="btn" ng-click="importJson()">Import</button>
+    <button class="btn" ng-click="addCurve()">+curve</button>
+    <button class="btn" ng-click="showCurveControl = !showCurveControl">toggleControl</button>
 </div>
-<div class="view">
+<div class="view" ng-class="{'hide-control': showCurveControl}">
     <div class="view-ratio"></div>
     <div class="content">
+        <curve curves="model.curves"></curve>
         <div ng-mouseenter="zoom(z, filteredElements)" ng-mouseleave="dezoom(z)" class="zone {{name}}" ng-class="{'zoomed':z.zoomed}" ng-repeat="(name, z) in model.zones" ng-style="{width: z.width + '%', height: z.height + '%', top:z.top + '%', left:z.left + '%'}">
             <h2><button ng-click="addElementToZone(z)" class="btn btn-link"><i class="icon-plus-sign-alt icon-large"></i></button> {{name | i18n}}</h2>
             <div class="elements" sort>

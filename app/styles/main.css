@@ -14,6 +14,7 @@ body, input, button, select, textarea{
 .elements{
 	height: -webkit-calc(100% - 20px);
     padding: 5px;
+	overflow-y: auto;
 }
 
 .element{
@@ -226,4 +227,45 @@ tr.rule-cat > td{
 }
 .rules-list .notimp{
 	color: red;
+}
+
+
+curve{
+	z-index: 500;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+
+curve svg{
+	
+}
+
+.curve, .curveShadow, .line {
+  fill: none;
+  stroke-width: 1px;
+}
+.curve {
+  stroke: red;
+  stroke-width: 3px;
+}
+.curveShadow{
+  stroke: red;
+  stroke-width: 1px;
+}
+.line{
+  stroke: grey;
+  stroke-width: 1px;
+}
+.marker{
+  fill: red;
+}
+.control {
+  fill: #ccc;
+  stroke: #000;
+  stroke-width: .5px;
+}
+
+.hide-control .control, .hide-control .line{
+	display: none;	
 }

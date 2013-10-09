@@ -667,7 +667,6 @@ angular.module('bmlayersApp')
                     }
                   }
               }
-            console.log(tagsSubsets);
                
               //process rules
               this.rules().forEach(function(rule){

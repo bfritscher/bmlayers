@@ -5,23 +5,19 @@ angular.module('bmlayersApp')
     return {
       template: '<div></div>',
       restrict: 'E',
+      scope:{
+        curves: '='
+      },
       link: function postLink(scope, element, attrs) {
-        element.text('this is the curve directive');
-      }
-    };
-  });
-  
-var w = 250,
-    h = 300,
-    t = .5,
-    delta = .01,
-    padding = 10,
-    points = [{x: 10, y: 250}, {x: 0, y: 0}, {x: 100, y: 0}, {x: 200, y: 250}, {x: 250, y: 250}],
-    bezier = {},
-    line = d3.svg.line().x(x).y(y);
+          createCurves(element, scope.curves);
+          
+          function createCurves(element, curves)  {
+  var w = element.width(),
+    h = element.height(),
+    padding = 10;
 
 
-var svg =d3.select("#playground").append("svg");
+var svg =d3.select(element[0]).append("svg");
 
 
 svg.append("defs").append("marker")
@@ -34,12 +30,30 @@ svg.append("defs").append("marker")
     .append("path")
         .attr('class', 'marker')
         .attr("d", "M 0,0 V 4 L6,2 Z");
+                
+        
 var vis = svg
     .attr("width", w + 2 * padding)
     .attr("height", h + 2 * padding)
-  .append("g")
-    .attr("transform", "translate(" + padding + "," + padding + ")");
+    .selectAll('g').data(curves);
+    
+    vis.enter()
+      .append("g")
+      .attr("transform", "translate(" + padding + "," + padding + ")");
 
+    vis.call(function(d){
+      d[0].forEach(function(g){
+        createCurve(d3.select(g), w, h);
+      })
+    });
+}
+
+function createCurve(vis, w, h){
+ var bezier = {},
+    t = .5,
+    delta = .01,
+    line = d3.svg.line().x(x).y(y),
+    points = vis.datum().points;
 update();
 
 vis.selectAll("circle.control")
@@ -54,15 +68,20 @@ vis.selectAll("circle.control")
         this.__origin__ = [d.x, d.y];
       })
       .on("drag", function(d) {
-        d.x = Math.min(w, Math.max(0, this.__origin__[0] += d3.event.dx));
-        d.y = Math.min(h, Math.max(0, this.__origin__[1] += d3.event.dy));
-        bezier = {};
-        update();
-        vis.selectAll("circle.control")
-          .attr("cx", x)
-          .attr("cy", y);
+          d.x = Math.min(w, Math.max(0, this.__origin__[0] += d3.event.dx));
+          d.y = Math.min(h, Math.max(0, this.__origin__[1] += d3.event.dy));
+          bezier = {};
+          update();
+          vis.selectAll("circle.control")
+            .attr("cx", x)
+            .attr("cy", y);
+         
       })
-      .on("dragend", function() {
+      .on("dragend", function(d) {
+        scope.$apply(function(){
+          d.x = d.x+0;
+          d.y = d.y+0;
+        });
         delete this.__origin__;
       }));
 
@@ -79,6 +98,7 @@ function update() {
       .attr("class", "line")
       .attr("d", line(points));
   path.attr("d", line(points));
+  
   var curve = vis.selectAll("path.curve")
       .data(getCurve(points.length));
   curve.enter().append("path")
@@ -86,6 +106,11 @@ function update() {
       .attr("marker-end", "url(#arrowhead)");
   curve.attr("d", line);
   
+  var curveShadow = vis.selectAll("path.curveShadow")
+      .data([bezier[points.length]]);
+  curveShadow.enter().append("path")
+      .attr("class", "curveShadow")
+  curveShadow.attr("d", line);
 }
 
 function interpolate(d, p) {
@@ -119,27 +144,15 @@ function getCurve(d) {
   return [curve.slice(0, t / delta + 1)];
 }
 
+
+}
+
 function x(d) { return d.x; }
 function y(d) { return d.y; }
-/*
-.curve, .line {
-  fill: none;
-  stroke-width: 1px;
-}
-.curve {
-  stroke: red;
-  stroke-width: 3px;
-}
-.line{
-  stroke: grey;
-  stroke-width: 1px;
-}
-.marker{
-  fill: red;
-}
-.control {
-  fill: #ccc;
-  stroke: #000;
-  stroke-width: .5px;
-}
-*/
+          
+          
+      }
+    };
+  });
+  
+  
