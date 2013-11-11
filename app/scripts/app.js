@@ -1,6 +1,6 @@
 'use strict';
-
-angular.module('bmlayersApp', ['ui.bootstrap', 'LocalStorageModule'])
+angular.module('LocalStorageModule').value('prefix', 'bmlayers');
+angular.module('bmlayersApp', ['ui.bootstrap', 'LocalStorageModule', 'ngRoute', 'firebase'])
   .config(function ($routeProvider) {
     $routeProvider
       .when('/', {
@@ -11,8 +11,11 @@ angular.module('bmlayersApp', ['ui.bootstrap', 'LocalStorageModule'])
         templateUrl: 'views/rules.html',
         controller: 'MainCtrl'
       })
+      .when('/evolution', {
+        templateUrl: 'views/evolution.html',
+        controller: 'EvolutionCtrl'
+      })
       .otherwise({
         redirectTo: '/'
       });
   });
-angularLocalStorage.value('prefix', 'bmlayers');

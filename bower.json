@@ -4,20 +4,21 @@
   "dependencies": {
     "json3": "~3.2.4",
     "es5-shim": "~2.0.8",
-	"d3": "latest",
-	"jquery": "latest",
-	"jquery-ui": "latest",
-	"bootstrap-css": "latest",
-	"font-awesome": "latest",
-	"angular" : "PatternConsulting/bower-angular",
-    "angular-resource": "PatternConsulting/bower-angular",
-    "angular-cookies": "PatternConsulting/bower-angular",
-    "angular-sanitize": "PatternConsulting/bower-angular",
-	"angular-ui-bootstrap-bower": "latest",
-	"angular-localstorage": "latest"
+    "d3": "latest",
+    "jquery": "latest",
+    "jquery-ui": "latest",
+    "bootstrap-css": "~2.3.2",
+    "font-awesome": "latest",
+    "angular": "~1.2.0-rc.3",
+    "angular-resource": "~1.2.0-rc.3",
+    "angular-cookies": "~1.2.0-rc.3",
+    "angular-sanitize": "~1.2.0-rc.3",
+    "angular-route": "~1.2.0-rc.3",
+    "angular-ui-bootstrap-bower": "latest",
+    "angular-localstorage": "latest"
   },
   "devDependencies": {
-    "angular-mocks": "PatternConsulting/bower-angular",
-    "angular-scenario": "PatternConsulting/bower-angular"
+    "angular-mocks": "~1.2.0-rc.3",
+    "angular-scenario": "~1.2.0-rc.3"
   }
 }
