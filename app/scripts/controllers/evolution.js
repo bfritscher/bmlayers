@@ -280,18 +280,19 @@ angular.module('bmlayersApp')
           if('new' !== d3.event.sourceEvent.target.parentElement.classList[0]){
             var zone = d3.select(d3.event.sourceEvent.target).data()[0];
             var oldzone = findZone(scope.models[d.value.m].zones, d.value.zone);
-            scope.$apply(function(){
-              //scope.data.elements[d.key].x = d3.event.x - oldzone.x + zone.x;
-              //scope.data.elements[d.key].y = d3.event.y - oldzone.y + zone.y;
-              d.value.x = d3.event.x - oldzone.x + zone.x;
-              d.value.y = d3.event.y - oldzone.y + zone.y;
-              scope.data.elements[d.key].zone = zone.name;
-              draw();
-              
-            });
-            console.log(zone.name);
+            if(zone){
+                scope.data.elements[d.key].x = d3.event.x - oldzone.x + zone.x;
+                scope.data.elements[d.key].y = d3.event.y - oldzone.y + zone.y;
+                //d.value.x = d3.event.x - oldzone.x + zone.x;
+                //d.value.y = d3.event.y - oldzone.y + zone.y;
+                scope.data.elements[d.key].zone = zone.name;
+                scope.$digest();
+                draw();
+                console.log(zone.name);
+            }
           }
           d3.selectAll('g.zone').style('pointer-events', 'none');
+          d3.select(this).style('pointer-events', 'all');       
           //d3.select(d3.event.sourceEvent.target).style('fill', '#00ff00');
         }
         
@@ -337,7 +338,9 @@ angular.module('bmlayersApp')
           }).attr('transform', function(d){
             return 'translate(' + (d.value.parent.x + 10 || 10) + ',' + (d.value.parent.y + 10 || 10) + ')';
           });
+          element.exit().remove();
   
+          //elements of previous model
           element = model.selectAll('g.old').data(function(m){
             return m.value.parent ? d3.map(m.value.parent.all()).entries() : [];
           });
