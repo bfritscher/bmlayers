@@ -206,6 +206,8 @@ angular.module('bmlayersApp')
           .attr('width', p('width'))
           .attr('height', p('height'));
           
+        model.exit().remove();
+          
         model.select('text').text(function(m){return m.key});
         model.attr('transform', function(m){return 'translate(' + ((m.value.column * 2 * mWidth)) + ',' + (m.value.row * (mHeight + rowSpacing)) + ')';});
         
@@ -214,6 +216,8 @@ angular.module('bmlayersApp')
         var modelDiffEnter = modelDiff.enter().append('g')
           .attr('class', 'diff');
         modelDiff.attr('transform', function(m){return 'translate(' + ((m.value.column * 2 * mWidth)-mWidth) + ',' + (m.value.row * (mHeight + rowSpacing)) + ')';});
+        
+        modelDiff.exit().remove();
         
         var element = modelDiff.selectAll('g.new').data(function(m){
           return d3.map(m.value.elements).entries();
@@ -235,6 +239,7 @@ angular.module('bmlayersApp')
         element.attr('transform', function(d){ return 'translate(' + (d.value.x || 0) + ',' + (d.value.y || 0) + ')';});                
         element.select('text').text(function(e){return e.key;});
         
+        element.exit().remove();
         
         var drag = d3.behavior.drag()
           .origin(function(d){
@@ -352,6 +357,8 @@ angular.module('bmlayersApp')
           element.select('text').text(function(e){return e.key;});
           
           element.attr('transform', function(d){ return 'translate(' + (d.value.x || 0) + ',' + (d.value.y || 0) + ')';});
+          
+          element.exit().remove();
         }
       }
       draw();
