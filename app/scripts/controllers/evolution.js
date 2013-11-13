@@ -274,26 +274,19 @@ angular.module('bmlayersApp')
         
         
         function dragend(d){
-           //TODO: fix remove all external dependencies
-          console.log(d, d3.event, d3.event.sourceEvent.target)
-          console.log(d3.event.sourceEvent.target.parentElement.classList[0]);
-          if('new' !== d3.event.sourceEvent.target.parentElement.classList[0]){
-            var zone = d3.select(d3.event.sourceEvent.target).data()[0];
-            var oldzone = findZone(scope.models[d.value.m].zones, d.value.zone);
-            if(zone){
-                scope.$apply(function(){
-                  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x;
-                  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y;
-                  scope.data.elements[d.key].zone = zone.name;
-                  draw();
-                  console.log(zone.name);
-                  
-                });
-            }
+          //TODO: fix remove all external dependencies
+          var zone = d3.select(d3.event.sourceEvent.target).data()[0];
+          var oldzone = findZone(scope.models[d.value.m].zones, d.value.zone);
+          if(zone){
+              scope.$apply(function(){
+                scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x;
+                scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y;
+                scope.data.elements[d.key].zone = zone.name;
+                draw();
+              });
           }
           d3.selectAll('g.zone').style('pointer-events', 'none');
-          d3.select(this).style('pointer-events', 'all');       
-          //d3.select(d3.event.sourceEvent.target).style('fill', '#00ff00');
+          d3.select(this).style('pointer-events', 'all');
         }
         
         model.each(function(d){
