@@ -53,6 +53,11 @@ angular.module('bmlayersApp')
           if(e.p){
             e.parent = $scope.data.elements[e.p];
           }
+          //FOR NOW set a default zone 
+          //TODO support no zone?
+          if(!e.zone){
+            e.zone = 'zone-a';
+          }
           if(models[e.m]){
             models[e.m].elements[e.id] = e;
           }
@@ -80,6 +85,7 @@ angular.module('bmlayersApp')
     
     var mWidth = 300;
     var mHeight = 150;
+    var rowSpacing = 50;
     
     function Model(obj){
       this.id = obj.id;
@@ -87,6 +93,12 @@ angular.module('bmlayersApp')
       this.parent = obj.p;
       this.children = [];
       this.elements = {};
+      this.x = function(){
+        return this.column * 2 * mWidth
+      };
+      this.y = function(){
+        return this.row * (mHeight + rowSpacing);
+      };
       this.zones = [
           {name:'zone-a', x: 0, y: 0, width: mWidth/2, height: mHeight/2},
           {name:'zone-b', x: mWidth/2, y: 0, width: mWidth/2, height: mHeight/2},
@@ -107,6 +119,7 @@ angular.module('bmlayersApp')
               //delete linked element
               element.x = element.parent.x;
               element.y = element.parent.y;
+              element.zone = element.parent.zone;
               delete elements[element.parent.id];
             }
           } else if('C' === element.type){
@@ -115,6 +128,7 @@ angular.module('bmlayersApp')
               delete elements[element.parent.id];
               element.x = element.parent.x;
               element.y = element.parent.y;
+              element.zone = element.parent.zone;
               elements[id] = element;
             }
           }
@@ -173,8 +187,8 @@ angular.module('bmlayersApp')
         
         var mWidth = 300;
         var mHeight = 150;
-        var rowSpacing = 20;
         
+        //Model
         var model = svg.selectAll('g.model').data(d3.map(scope.models).entries());
         var modelEnter = model.enter().append('g')
           .attr('class', 'model');
@@ -193,6 +207,7 @@ angular.module('bmlayersApp')
           }
         }
           
+        //Create ZONES
         modelEnter.selectAll('g.zone').data(function(d){
           return d.value.zones;
         }).enter().append('g')
@@ -204,21 +219,84 @@ angular.module('bmlayersApp')
           .attr('x', 0)
           .attr('y', 0)
           .attr('width', p('width'))
-          .attr('height', p('height'));
+          .attr('height', p('height'))
+          .on('dblclick', function(d){
+              //ADD new element
+              var model = d3.select(d3.event.target.parentElement).data()[0];
+              var zone = d3.select(d3.event.target).data()[0];
+              //TODO center on element?
+              var pos = d3.mouse(this);
+              scope.$apply(function(){
+                scope.data.elements['e11'] = {
+                  //TODO: id
+                  id: 'e11',
+                  m: model.value.id,
+                  type: 'A',
+                  zone: zone.name,
+                  x: pos[0],
+                  y: pos[1]
+                };
+              });
+          });
+          
+        //create model MENU
+        var modelMenuEnter = modelEnter.append('g')
+          .attr('class', 'model-menu')
+          .attr('transform', 'translate(0,-40)');
+        
+        makeButton(modelMenuEnter, 'C')
+        .on('click', function(d){
+          //add new model to clicked row
+          scope.$apply(function(){
+            //TODO: generate good id
+            scope.data.models.push({id: d.value.id + 1, p: d.value.id});
+          })
+        });
+        
+        makeButton(modelMenuEnter, 'D', 40)
+        .on('click', function(d){
+          //delete a model
+          scope.$apply(function(){
+            //TODO: handle migration cases
+            scope.data.models.splice(scope.data.models.indexOf(d.value), 1);
+          })
+        });
+          
+        function makeButton(selection, label, x, y){
+          x = x || 0;
+          y = y || 0;
+          var button = selection.append('g')
+          .attr('transform', 'translate(' + x + ',' + y + ')');
+          button.append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', 30)
+          .attr('height', 30); 
+          
+          button.append('text')
+          .attr('x', 10)
+          .attr('y', 20)
+          .text(label);
+          
+          return button;
+        }
           
         model.exit().remove();
           
+        //model update
         model.select('text').text(function(m){return m.key});
-        model.attr('transform', function(m){return 'translate(' + ((m.value.column * 2 * mWidth)) + ',' + (m.value.row * (mHeight + rowSpacing)) + ')';});
+        model.attr('transform', function(m){return 'translate(' + m.value.x() + ',' + m.value.y() + ')';});
+        
         
         //modelDiff boxes
         var modelDiff = svg.selectAll('g.diff').data(d3.map(scope.models).entries().slice(1));
         var modelDiffEnter = modelDiff.enter().append('g')
           .attr('class', 'diff');
-        modelDiff.attr('transform', function(m){return 'translate(' + ((m.value.column * 2 * mWidth)-mWidth) + ',' + (m.value.row * (mHeight + rowSpacing)) + ')';});
+        modelDiff.attr('transform', function(m){return 'translate(' + (m.value.x()-mWidth) + ',' + m.value.y() + ')';});
         
         modelDiff.exit().remove();
         
+        //diff elements
         var element = modelDiff.selectAll('g.new').data(function(m){
           return d3.map(m.value.elements).entries();
         });
@@ -236,10 +314,20 @@ angular.module('bmlayersApp')
           .attr('x', 10)
           .attr('y', 20);
         
-        element.attr('transform', function(d){ return 'translate(' + (d.value.x || 0) + ',' + (d.value.y || 0) + ')';});                
+        element.attr('transform', function(d){
+          var zone = findZone(scope.models[d.value.m].zones, d.value.zone);
+          var x = zone && zone.x || 0;
+          var y = zone && zone.y || 0;
+          x = x + d.value.x || x;
+          y = y + d.value.y || y;
+          return 'translate(' + x + ',' + y + ')';
+        });                
         element.select('text').text(function(e){return e.key;});
         
         element.exit().remove();
+        
+        
+        //model elements behaviors
         
         var drag = d3.behavior.drag()
           .origin(function(d){
@@ -255,12 +343,9 @@ angular.module('bmlayersApp')
         }
           
         function dragmove(d){
-          //d3.select(this).attr('transform', 'translate(' + d3.event.x + ',' + d3.event.y + ')');
-          //console.log(d, d3.event, d3.event.sourceEvent.target);
           scope.$apply(function(){
             scope.data.elements[d.key].x = d3.event.x;
             scope.data.elements[d.key].y = d3.event.y;
-            //d.value.y = d3.event.y;
             draw();
           });
         }
@@ -274,19 +359,28 @@ angular.module('bmlayersApp')
         
         
         function dragend(d){
-          //TODO: fix remove all external dependencies
+         //TODO: fix remove all external dependencies
           var zone = d3.select(d3.event.sourceEvent.target).data()[0];
+          var model = d3.select(d3.event.sourceEvent.target.parentElement).data()[0];
           var oldzone = findZone(scope.models[d.value.m].zones, d.value.zone);
           if(zone){
               scope.$apply(function(){
-                scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x;
-                scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y;
-                scope.data.elements[d.key].zone = zone.name;
+                if(model.value.id !== scope.data.elements[d.key].m){
+                  var oldModel = scope.models[scope.data.elements[d.key].m];
+                  //TODO: HANDLE DEPENDENCIES
+                  //THIS only works if models have same zone positions
+                  scope.data.elements[d.key].m = model.value.id;
+                  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x + oldModel.x() - model.value.x();
+                  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y + oldModel.y() - model.value.y();
+                }else{
+                  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x;
+                  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y;
+                }
+                scope.data.elements[d.key].zone = zone.name;                
                 draw();
               });
           }
-          d3.selectAll('g.zone').style('pointer-events', 'none');
-          d3.select(this).style('pointer-events', 'all');
+          d3.select(this).style('pointer-events', 'all');       
         }
         
         model.each(function(d){
@@ -303,8 +397,8 @@ angular.module('bmlayersApp')
             .attr('class', 'new');
           
           elementEnter.append('rect')
-            .attr('x',10)
-            .attr('y',10)
+            .attr('x',0)
+            .attr('y',0)
             .attr('width', 100)
             .attr('height', 40)
             
@@ -312,7 +406,18 @@ angular.module('bmlayersApp')
             .attr('x', 10)
             .attr('y', 20);
             
-          element.select('text').text(function(e){return e.key;});
+          makeButton(elementEnter, 'D', 0, 0)
+          .attr('style', 'pointer-events:all;')
+          .on('mousedown', function(d){
+            //DELETE A ELEMENT
+            d3.event.stopPropagation(); 
+            scope.$apply(function(){
+              //TODO HANDLER dependencies!
+              delete scope.data.elements[d.key];
+            });
+          });
+            
+          element.select('text').text(function(e){return e.key;})
           
           //Only add should be draggable (delete and change are relative to their previous)
           elementEnter.filter(function(d){
@@ -333,9 +438,10 @@ angular.module('bmlayersApp')
           });
           element.exit().remove();
   
+  
           //elements of previous model
-          element = model.selectAll('g.old').data(function(m){
-            return m.value.parent ? d3.map(m.value.parent.all()).entries() : [];
+          element = model.select('g.' + zone.name).selectAll('g.old').data(function(m){
+            return m.value.parent ? d3.map(m.value.parent.all()).entries().filter(function(d){return d.value.zone === zone.name;}) : [];
           });
           
           elementEnter = element.enter()
