@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('bmlayersApp')
-  .controller('EvolutionCtrl', ['$scope', 'angularFire', function ($scope, angularFire) {
+  .controller('EvolutionCtrl', ['$scope','angularFire', function ($scope, angularFire) {
     
     var ref = new Firebase('https://bm.firebaseio.com/bm1');
     angularFire(ref, $scope, 'data');
@@ -124,7 +124,7 @@ angular.module('bmlayersApp')
     }
   }]);
 angular.module('bmlayersApp')
-  .directive('test', [function() {
+  .directive('test', ['$timeout', function($timeout) {
     return function(scope, elem, attrs) {
       
       var zoom = d3.behavior.zoom()
@@ -281,14 +281,14 @@ angular.module('bmlayersApp')
             var zone = d3.select(d3.event.sourceEvent.target).data()[0];
             var oldzone = findZone(scope.models[d.value.m].zones, d.value.zone);
             if(zone){
-                scope.data.elements[d.key].x = d3.event.x - oldzone.x + zone.x;
-                scope.data.elements[d.key].y = d3.event.y - oldzone.y + zone.y;
-                //d.value.x = d3.event.x - oldzone.x + zone.x;
-                //d.value.y = d3.event.y - oldzone.y + zone.y;
-                scope.data.elements[d.key].zone = zone.name;
-                scope.$digest();
-                draw();
-                console.log(zone.name);
+                scope.$apply(function(){
+                  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x;
+                  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y;
+                  scope.data.elements[d.key].zone = zone.name;
+                  draw();
+                  console.log(zone.name);
+                  
+                });
             }
           }
           d3.selectAll('g.zone').style('pointer-events', 'none');
