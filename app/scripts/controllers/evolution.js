@@ -56,7 +56,7 @@ angular.module('bmlayersApp')
           //FOR NOW set a default zone 
           //TODO support no zone?
           if(!e.zone){
-            e.zone = 'zone-a';
+            e.zone = 'value_proposition';
           }
           if(models[e.m]){
             models[e.m].elements[e.id] = e;
@@ -83,9 +83,76 @@ angular.module('bmlayersApp')
       
     }, true);
     
-    var mWidth = 300;
-    var mHeight = 150;
+    var mWidth = 1280;
+    var mHeight = 720;
     var rowSpacing = 50;
+    
+    var zones = [
+		{
+			width: mWidth/5,
+			height: mHeight/4*3,
+			y:0,
+			x:0,
+			name: 'partner_network'
+		},
+		{
+			width: mWidth/5,
+			height: mHeight/8*3,
+			y:0,
+			x: mWidth/5,
+			name: 'key_activities'
+		},
+		{
+			width: mWidth/5,
+			height: mHeight/8*3,
+			y:mHeight/8*3,
+			x: mWidth/5,
+			name: 'key_resources'
+		},
+		{
+			width: mWidth/2,
+			height: mHeight/4,
+			y:mHeight/8*6,
+			x:0,
+			name: 'cost_structure'
+		},
+		{
+			width: mWidth/5,
+			height: mHeight/8*6,
+			y:0,
+			x:mWidth/5*2,
+			name: 'value_proposition'
+		},
+		{
+			width: mWidth/5,
+			height: mHeight/8*6,
+			y:0,
+			x:mWidth/5*4,
+			name: 'customer_segments'
+		},
+		{
+			width: mWidth/5,
+			height: mHeight/8*3,
+			y:0,
+			x:mWidth/5*3,
+			name: 'customer_relationship'
+		},
+		{
+			width: mWidth/5,
+			height: mHeight/8*3,
+			y:mHeight/8*3,
+			x:mWidth/5*3,
+			name: 'channels'
+		},
+		{
+			width: mWidth/2,
+			height: mHeight/8*2,
+			y:mHeight/8*6,
+			x:mWidth/2,
+			name: 'revenue_streams'
+		}
+    ];
+    
     
     function Model(obj){
       this.id = obj.id;
@@ -99,12 +166,9 @@ angular.module('bmlayersApp')
       this.y = function(){
         return this.row * (mHeight + rowSpacing);
       };
-      this.zones = [
-          {name:'zone-a', x: 0, y: 0, width: mWidth/2, height: mHeight/2},
-          {name:'zone-b', x: mWidth/2, y: 0, width: mWidth/2, height: mHeight/2},
-          {name:'zone-c', x: 0, y: mHeight/2, width: mWidth/2, height: mHeight/2},
-          {name:'zone-d', x: mWidth/2, y: mHeight/2, width: mWidth/2, height: mHeight/2}
-        ];
+	  this.width = mWidth;
+	  this.height = mHeight;
+      this.zones = zones;
       this.all = function(){
         var elements = {};
         if(this.parent){
@@ -184,19 +248,18 @@ angular.module('bmlayersApp')
          
       function draw(){
         var svg = d3.select(elem[0]).select('g');  
-        
-        var mWidth = 300;
-        var mHeight = 150;
-        
+                
         //Model
         var model = svg.selectAll('g.model').data(d3.map(scope.models).entries());
         var modelEnter = model.enter().append('g')
           .attr('class', 'model');
+        /*
         modelEnter.append('rect')
           .attr('x', 0)
           .attr('y', 0)
           .attr('width', mWidth)
           .attr('height', mHeight);
+		*/
         modelEnter.append('text')
           .attr('x', 10)
           .attr('y', 20);
@@ -292,7 +355,7 @@ angular.module('bmlayersApp')
         var modelDiff = svg.selectAll('g.diff').data(d3.map(scope.models).entries().slice(1));
         var modelDiffEnter = modelDiff.enter().append('g')
           .attr('class', 'diff');
-        modelDiff.attr('transform', function(m){return 'translate(' + (m.value.x()-mWidth) + ',' + m.value.y() + ')';});
+        modelDiff.attr('transform', function(m){return 'translate(' + (m.value.x()- m.value.width) + ',' + m.value.y() + ')';});
         
         modelDiff.exit().remove();
         
