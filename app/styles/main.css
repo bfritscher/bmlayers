@@ -258,7 +258,7 @@ curve svg{
   stroke-width: 1px;
 }
 .marker{
-  fill: red;
+  fill: inherit;
 }
 .control {
   fill: #ccc;

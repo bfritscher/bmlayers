@@ -66,14 +66,35 @@ angular.module('bmlayersApp')
 		for(var id in $scope.data.links){
           var l = $scope.data.links[id];
 		  if(typeof l === 'object'){
-			  if(!l.points){
-				var elementFrom = $scope.data.elements[l.from];
-				var zoneFrom = zones[elementFrom.zone];
-				var elementTo = $scope.data.elements[l.to];
-				var zoneTo = zones[elementTo.zone];
-				l.points = [{x: zoneFrom.x + elementFrom.x, y: zoneFrom.y + elementFrom.y},
-							{x: zoneTo.x + elementTo.x, y: zoneTo.y + elementTo.y}]
+			  if(!l.getPoints){
+				l.getPoints = function(){
+					var elementFrom = $scope.data.elements[this.from];
+					var zoneFrom = zones[elementFrom.zone];
+					var elementTo = $scope.data.elements[this.to];
+					var zoneTo = zones[elementTo.zone];
+					return [{x: zoneFrom.x + elementFrom.x, y: zoneFrom.y + elementFrom.y},
+								{x: zoneTo.x + elementTo.x, y: zoneTo.y + elementTo.y}]  
+				};
 			  }
+			  if(!l.points){
+				l.points = l.getPoints();
+			  }
+			  for(var i=0; i < l.points.length; i++){
+				  if(!l.points[i]) l.points.splice(i, 1);
+			  }
+			  //bounding boxes
+			  //TODO XXX BIG REFACTOR also with DRAG, renaming points vs l.points not same!!
+			  var index = 0;
+			  var points = l.getPoints();
+			  var margin = 5;
+			  var margin2 = 10;
+			  l.points[0].x = Math.max(points[index].x - margin, Math.min(points[index].x + 100 + margin, l.points[0].x));
+			  l.points[0].y = Math.max(points[index].y - margin, Math.min(points[index].y + 40 + margin, l.points[0].y));
+			  index = 1;
+			  var index2 = l.points.length-1;
+			  l.points[index2].x = Math.max(points[index].x - margin2, Math.min(points[index].x + 100 + margin2, l.points[index2].x));
+			  l.points[index2].y = Math.max(points[index].y - margin2, Math.min(points[index].y + 40 + margin2, l.points[index2].y));
+			  
 			  if(models[l.m]){
 				models[l.m].links[id] = l;
 			  }
@@ -428,7 +449,7 @@ angular.module('bmlayersApp')
 		  .on("drag", function(d, i) {
 			var parent = this.parentElement;
 			var x = d3.event.x
-			var y = d3.event.y
+			var y = d3.event.y			
 			scope.$apply(function(){
 				scope.data.links[d3.select(parent).datum().key].points[i].x = x;
 			  	scope.data.links[d3.select(parent).datum().key].points[i].y = y;
@@ -512,8 +533,8 @@ angular.module('bmlayersApp')
           .attr('class', 'new');
         
         elementEnter.append('rect')
-          .attr('x',10)
-          .attr('y',10)
+          .attr('x',0)
+          .attr('y',0)
           .attr('width', 100)
           .attr('height', 40)
           
@@ -576,7 +597,8 @@ angular.module('bmlayersApp')
           var oldzone = scope.models[d.value.m].zones[d.value.zone];
           if(zone){
               scope.$apply(function(){
-                if(model.value.id !== scope.data.elements[d.key].m){
+				//TODO BETTER WAY TO ID MODEL
+                if(!model.value.from && model.value.id && model.value.id !== scope.data.elements[d.key].m){
                   var oldModel = scope.models[scope.data.elements[d.key].m];
                   //TODO: HANDLE DEPENDENCIES
                   //THIS only works if models have same zone positions
@@ -672,8 +694,8 @@ angular.module('bmlayersApp')
             .append('g')
             .attr('class', 'old');
           elementEnter.append('rect')
-            .attr('x',10)
-            .attr('y',10)
+            .attr('x',0)
+            .attr('y',0)
             .attr('width', 100)
             .attr('height', 40)
             
