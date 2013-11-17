@@ -62,7 +62,23 @@ angular.module('bmlayersApp')
           if(models[e.m]){
             models[e.m].elements[e.id] = e;
           }
-        }      
+        }
+		for(var id in $scope.data.links){
+          var l = $scope.data.links[id];
+		  if(typeof l === 'object'){
+			  if(!l.points){
+				var elementFrom = $scope.data.elements[l.from];
+				var zoneFrom = zones[elementFrom.zone];
+				var elementTo = $scope.data.elements[l.to];
+				var zoneTo = zones[elementTo.zone];
+				l.points = [{x: zoneFrom.x + elementFrom.x, y: zoneFrom.y + elementFrom.y},
+							{x: zoneTo.x + elementTo.x, y: zoneTo.y + elementTo.y}]
+			  }
+			  if(models[l.m]){
+				models[l.m].links[id] = l;
+			  }
+		  }
+        }  
         $scope.models = models;
         
         
@@ -88,71 +104,71 @@ angular.module('bmlayersApp')
     var mHeight = 900;
     var rowSpacing = 50;
     
-    var zones = [
-		{
+    var zones = {
+		partner_network: {
 			width: mWidth/5,
 			height: mHeight/4*3,
 			y:0,
 			x:0,
 			name: 'partner_network'
 		},
-		{
+		key_activities:{
 			width: mWidth/5,
 			height: mHeight/8*3,
 			y:0,
 			x: mWidth/5,
 			name: 'key_activities'
 		},
-		{
+		key_resources:{
 			width: mWidth/5,
 			height: mHeight/8*3,
 			y:mHeight/8*3,
 			x: mWidth/5,
 			name: 'key_resources'
 		},
-		{
+		cost_structure:{
 			width: mWidth/2,
 			height: mHeight/4,
 			y:mHeight/8*6,
 			x:0,
 			name: 'cost_structure'
 		},
-		{
+		value_proposition:{
 			width: mWidth/5,
 			height: mHeight/8*6,
 			y:0,
 			x:mWidth/5*2,
 			name: 'value_proposition'
 		},
-		{
+		customer_segments:{
 			width: mWidth/5,
 			height: mHeight/8*6,
 			y:0,
 			x:mWidth/5*4,
 			name: 'customer_segments'
 		},
-		{
+		customer_relationship:{
 			width: mWidth/5,
 			height: mHeight/8*3,
 			y:0,
 			x:mWidth/5*3,
 			name: 'customer_relationship'
 		},
-		{
+		channels:{
 			width: mWidth/5,
 			height: mHeight/8*3,
 			y:mHeight/8*3,
 			x:mWidth/5*3,
 			name: 'channels'
 		},
-		{
+		revenue_streams:{
 			width: mWidth/2,
 			height: mHeight/8*2,
 			y:mHeight/8*6,
 			x:mWidth/2,
 			name: 'revenue_streams'
 		}
-    ];
+    };
     
     
     function Model(obj){
@@ -161,6 +177,7 @@ angular.module('bmlayersApp')
       this.parent = obj.p;
       this.children = [];
       this.elements = {};
+	  this.links = {};
       this.x = function(){
         return this.column * 2 * mWidth
       };
@@ -200,10 +217,21 @@ angular.module('bmlayersApp')
         }
         return elements;
       };
+	  this.allLinks = function(){
+		var links = {};
+		if(this.parent){
+			links = this.parent.allLinks();
+		}
+		for(var id in this.links){
+			var link = this.links[id];
+			links[id] = link;
+		}
+		return links;
+	  };
     }
   }]);
 angular.module('bmlayersApp')
-  .directive('test', ['uuid4', function(uuid4) {
+  .directive('test', ['$filter', 'uuid4', function($filter, uuid4) {
     return function(scope, elem, attrs) {
       
       var zoom = d3.behavior.zoom()
@@ -218,7 +246,18 @@ angular.module('bmlayersApp')
       .attr("height", "100%")
       .call(zoom);
       
-      var  svg = d3.select(elem[0]).append('g');
+      d3.select(elem[0]).append("marker")
+		.attr("id", "arrowhead")
+		.attr("refY", 2)
+		.attr("markerWidth", 6)
+		.attr("markerHeight", 4)
+		.attr("orient", "auto")
+		.append("path")
+			.attr('class', 'marker')
+			.attr("d", "M 0,0 V 4 L6,2 Z");
+      
+      var  svg = d3.select(elem[0]).append('g');  
+	  
       function zoomed() {
         svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
       }
@@ -262,32 +301,53 @@ angular.module('bmlayersApp')
           .attr('height', mHeight);
 		*/
         modelEnter.append('text')
-          .attr('x', 10)
-          .attr('y', 20);
+          .attr('x', -20)
+          .attr('y', 0);
+
+         
+        // DRAW OLD LINKS behind
+		var modelLinksEnter = modelEnter.append('g')
+		.attr('class', 'links-old')
+		.attr('transform', 'translate(0,0)');
+
+		var link = model.select('g.links-old').selectAll('g.link.old').data(function(d){
+			return d.value.parent ? d3.map(d.value.parent.allLinks()).entries() : [];
+		});
+		var linkEnter = link.enter().append('g')
+		.attr('class', 'link old')
+		linkEnter.append('path')
+		.attr("marker-end", "url(#arrowhead)");
+		
+		var line = d3.svg.line()
+			.interpolate('cardinal')
+			.x(function(d){return d.x;})
+			.y(function(d){return d.y;});
+		
+		link.select('path').attr('d', function(d){
+			return line(d.value.points);
+		});
+		
+		link.exit().remove();
           
-        function p(property){
-          return function(d){
-            return d[property];
-          }
-        }
           
         //Create ZONES
-        modelEnter.selectAll('g.zone').data(function(d){
-          return d.value.zones;
+        var zoneEnter = modelEnter.selectAll('g.zone').data(function(d){
+          return d3.map(d.value.zones).entries();
         }).enter().append('g')
-          .attr('transform', function(d){return 'translate(' + d.x + ',' + d.y + ')'})
+          .attr('transform', function(d){return 'translate(' + d.value.x + ',' + d.value.y + ')'})
           .attr('class', function(d){
-            return d.name + ' zone';
-            })
-          .append('rect')
+            return d.value.name + ' zone';
+          });
+			
+        zoneEnter.append('rect')
           .attr('x', 0)
           .attr('y', 0)
-          .attr('width', p('width'))
-          .attr('height', p('height'))
+          .attr('width', function(d){ return d.value.width;})
+          .attr('height', function(d){ return d.value.height;})
           .on('dblclick', function(d){
               //ADD new element
               var model = d3.select(d3.event.target.parentElement).data()[0];
-              var zone = d3.select(d3.event.target).data()[0];
+              var zone = d3.select(d3.event.target).data()[0].value;
               //TODO center on element?
               var pos = d3.mouse(this);
               scope.$apply(function(){
@@ -302,6 +362,90 @@ angular.module('bmlayersApp')
                 };
               });
           });
+        zoneEnter.append('text')
+		.attr('x', 10)
+        .attr('y', 10)
+		.text(function(d){
+			return $filter('i18n')(d.value.name);
+		});
+		
+				
+		//DRAW new links
+		modelLinksEnter = modelEnter.append('g')
+		.attr('class', 'links')
+		.attr('transform', 'translate(0,0)');
+		
+		
+		link = model.select('g.links').selectAll('g.link.new').data(function(d){return  d3.map(d.value.links).entries();})
+		linkEnter = link.enter().append('g')
+		.attr('class', 'link new')
+		linkEnter.append('path')
+		.attr("marker-end", "url(#arrowhead)")
+		.on('dblclick', function(d){
+			var cursor = d3.mouse(this);
+			var point = {x: cursor[0], y: cursor[1]};
+			function getInsertLocation(){
+				if(d.value.points[0].x < point.x){
+					for(var i = 0; i < d.value.points.length; i++){
+						if(point.x < d.value.points[i].x){
+							return i;
+						}
+					}
+					return i-1;
+				}else{
+					for(var i = 0; i < d.value.points.length; i++){
+						if(point.x > d.value.points[i].x){
+							return i;
+						}
+					}
+					return i-1;
+				}
+			}
+			scope.$apply(function(){
+				scope.data.links[d.key].points.splice(getInsertLocation(), 0, point);
+			});
+		});
+		
+		
+		var circleControl = link.selectAll("circle.control")
+    	.data(function(d){return d.value.points;});
+  		circleControl.enter().append("circle")
+		.attr("class", "control")
+		.attr("r", 7)
+		.on('dblclick', function(d,i){
+			var parent = this.parentElement;
+			//cannot delete edges
+			if(i> 0 && i < d3.select(parent).datum().value.points.length-1){
+				scope.$apply(function(){
+					scope.data.links[d3.select(parent).datum().key].points.splice(i, 1);
+				});
+			}
+		})
+		.call(d3.behavior.drag()
+		  .origin(function(d){ 
+		  	return {x: d.x, y: d.y};
+		  })
+		  .on("drag", function(d, i) {
+			var parent = this.parentElement;
+			var x = d3.event.x
+			var y = d3.event.y
+			scope.$apply(function(){
+				scope.data.links[d3.select(parent).datum().key].points[i].x = x;
+			  	scope.data.links[d3.select(parent).datum().key].points[i].y = y;
+				draw();
+			});
+		  }));
+		
+		
+		//update
+		circleControl.attr("cx", function(d){return d.x;})
+		.attr("cy", function(d){return d.y;});
+		
+		link.select('path').attr('d', function(d){
+			return line(d.value.points);
+		});
+		
+		link.exit().remove();
           
         //create model MENU
         var modelMenuEnter = modelEnter.append('g')
@@ -378,7 +522,7 @@ angular.module('bmlayersApp')
           .attr('y', 20);
         
         element.attr('transform', function(d){
-          var zone = findZone(scope.models[d.value.m].zones, d.value.zone);
+          var zone = scope.models[d.value.m].zones[d.value.zone];
           var x = zone && zone.x || 0;
           var y = zone && zone.y || 0;
           x = x + d.value.x || x;
@@ -389,6 +533,18 @@ angular.module('bmlayersApp')
         
         element.exit().remove();
         
+        //model diff links
+		modelLinksEnter = modelDiffEnter.append('g')
+		.attr('class', 'links')
+        link = modelDiff.select('g.links').selectAll('g.link').data(function(d){return  d3.map(d.value.links).entries();})
+		linkEnter = link.enter().append('g')
+		.attr('class', 'link')
+		linkEnter.append('path')
+		.attr("marker-end", "url(#arrowhead)")
+        link.select('path').attr('d', function(d){
+			return line(d.value.points);
+		});
+		link.exit().remove();
         
         //model elements behaviors
         
@@ -413,19 +569,11 @@ angular.module('bmlayersApp')
           });
         }
         
-        function findZone(array, name){
-          for(var i=0; i < array.length; i++){
-            if(array[i].name === name) return array[i];
-          }
-          return null;
-        }
-        
-        
         function dragend(d){
          //TODO: fix remove all external dependencies
-          var zone = d3.select(d3.event.sourceEvent.target).data()[0];
+          var zone = d3.select(d3.event.sourceEvent.target).data()[0].value;
           var model = d3.select(d3.event.sourceEvent.target.parentElement).data()[0];
-          var oldzone = findZone(scope.models[d.value.m].zones, d.value.zone);
+          var oldzone = scope.models[d.value.m].zones[d.value.zone];
           if(zone){
               scope.$apply(function(){
                 if(model.value.id !== scope.data.elements[d.key].m){
@@ -447,7 +595,9 @@ angular.module('bmlayersApp')
         }
         
         model.each(function(d){
-          d.value.zones.forEach(elementOfZone);
+          for(var key in d.value.zones){
+			elementOfZone(d.value.zones[key]);
+          }	  
         });
         
         function elementOfZone(zone){
@@ -465,9 +615,19 @@ angular.module('bmlayersApp')
             .attr('width', 100)
             .attr('height', 40)
             
+          /*
           elementEnter.append('text')
             .attr('x', 10)
             .attr('y', 20);
+          */
+		  
+		  elementEnter
+		  .append('foreignObject')
+		  .attr('width', 100)
+		  .attr('height', 40)
+		  .append('xhtml:body')
+		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+		  .append('div');
             
           makeButton(elementEnter, 'D', 0, 0)
           .attr('style', 'pointer-events:all;')
@@ -480,7 +640,8 @@ angular.module('bmlayersApp')
             });
           });
             
-          element.select('text').text(function(e){return e.key;})
+          //element.select('text').text(function(e){return e.key;})
+		  element.select('div').text(function(e){return e.key;});
           
           //Only add should be draggable (delete and change are relative to their previous)
           elementEnter.filter(function(d){
@@ -497,7 +658,7 @@ angular.module('bmlayersApp')
           element.filter(function(d){
             return 'A' !== d.value.type;
           }).attr('transform', function(d){
-            return 'translate(' + (d.value.parent.x + 10 || 10) + ',' + (d.value.parent.y + 10 || 10) + ')';
+            return d.value.parent ? 'translate(' + (d.value.parent.x + 10 || 10) + ',' + (d.value.parent.y + 10 || 10) + ')' : '';
           });
           element.exit().remove();
   

@@ -53,7 +53,7 @@ function createCurve(vis, w, h){
  var bezier = {},
     t = .5,
     delta = .01,
-    line = d3.svg.line().x(x).y(y),
+    line = d3.svg.line().interpolate('cardinal').x(x).y(y),
     points = vis.datum().points;
 update();
 
@@ -89,16 +89,44 @@ vis.selectAll("circle.control")
 var last = 0;
 d3.timer(function(elapsed) {
   t = (t + (elapsed - last) / 5000) % 1;
-  last = elapsed;
-  update();
+  if(elapsed - last > 3000){
+    update();
+    last = elapsed;
+  }
 });
 
 function update() {
   var path = vis.selectAll("path.line").data([points]);
   path.enter().append("path")
       .attr("class", "line")
-      .attr("d", line(points));
-  path.attr("d", line(points));
+      .attr("marker-end", "url(#arrowhead)");
+      
+  path.attr("d", line);
+  
+  vis.selectAll("path.line").each(function(d){
+    
+  var path = this;
+  
+  // var path = document.querySelector('.squiggle-animated path');
+  var length = path.getTotalLength();
+  console.log(length);
+  // Clear any previous transition
+  path.style.transition = path.style.WebkitTransition =
+  'none';
+  // Set up the starting positions
+  path.style.strokeDasharray = length + ' ' + length;
+  path.style.strokeDashoffset = length;
+  // Trigger a layout so styles are calculated & the browser
+  // picks up the starting position before animating
+  path.getBoundingClientRect();
+  // Define our transition
+  path.style.transition = path.style.WebkitTransition =
+  'stroke-dashoffset 3s linear';
+  // Go!
+  path.style.strokeDashoffset = '0';
+  path.style.strokeWidth = '3px';
+  
+  });
   
   var curve = vis.selectAll("path.curve")
       .data(getCurve(points.length));
