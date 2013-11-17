@@ -1,7 +1,8 @@
 'use strict';
 
 angular.module('bmlayersApp')
-  .controller('EvolutionCtrl', ['$scope','angularFire', function ($scope, angularFire) {
+  .controller('EvolutionCtrl', ['$scope','angularFire', 'uuid4',
+  function ($scope, angularFire, uuid4) {
     
     var ref = new Firebase('https://bm.firebaseio.com/bm1');
     angularFire(ref, $scope, 'data');
@@ -84,7 +85,7 @@ angular.module('bmlayersApp')
     }, true);
     
     var mWidth = 1280;
-    var mHeight = 720;
+    var mHeight = 900;
     var rowSpacing = 50;
     
     var zones = [
@@ -202,7 +203,7 @@ angular.module('bmlayersApp')
     }
   }]);
 angular.module('bmlayersApp')
-  .directive('test', ['$timeout', function($timeout) {
+  .directive('test', ['uuid4', function(uuid4) {
     return function(scope, elem, attrs) {
       
       var zoom = d3.behavior.zoom()
@@ -290,9 +291,9 @@ angular.module('bmlayersApp')
               //TODO center on element?
               var pos = d3.mouse(this);
               scope.$apply(function(){
-                scope.data.elements['e11'] = {
-                  //TODO: id
-                  id: 'e11',
+				var id = uuid4.generate();
+                scope.data.elements[id] = {
+                  id: id,
                   m: model.value.id,
                   type: 'A',
                   zone: zone.name,
@@ -311,8 +312,7 @@ angular.module('bmlayersApp')
         .on('click', function(d){
           //add new model to clicked row
           scope.$apply(function(){
-            //TODO: generate good id
-            scope.data.models.push({id: d.value.id + 1, p: d.value.id});
+            scope.data.models.push({id: uuid4.generate(), p: d.value.id});
           })
         });
         
