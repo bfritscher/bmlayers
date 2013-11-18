@@ -269,3 +269,18 @@ curve svg{
 .hide-control .control, .hide-control .line{
 	display: none;	
 }
+
+.model-name {
+	text-align:center;
+	font-size: 80px;
+	line-height: 100px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	border: none;
+	width: 100%;
+}
+
+.model-name:focus{
+	outline-offset: none;
+}

@@ -168,7 +168,7 @@ angular.module('bmlayersApp')
     
     var mWidth = 1280;
     var mHeight = 900;
-    var rowSpacing = 50;
+    var rowSpacing = 360;
     
     var zones = {
 		partner_network: {
@@ -267,6 +267,10 @@ angular.module('bmlayersApp')
       this.id = obj.id;
       this.column = obj.c;
       this.parent = obj.p;
+	  this.name = obj.name;
+	  this.dname = obj.dname;
+	  this.when = obj.when;
+	  this.color = obj.color;
       this.children = [];
       this.elements = {};
 	  this.links = {};
@@ -323,7 +327,7 @@ angular.module('bmlayersApp')
     }
   }]);
 angular.module('bmlayersApp')
-  .directive('test', ['$filter', 'uuid4', function($filter, uuid4) {
+  .directive('test', ['$filter', 'uuid4', '$compile', function($filter, uuid4, $compile) {
     return function(scope, elem, attrs) {
       
       var zoom = d3.behavior.zoom()
@@ -382,20 +386,52 @@ angular.module('bmlayersApp')
         var svg = d3.select(elem[0]).select('g');  
                 
         //Model
-        var model = svg.selectAll('g.model').data(d3.map(scope.models).entries());
+        var model = svg.selectAll('g.model').data(d3.map(scope.models).entries(), function(d){return d.key;});
         var modelEnter = model.enter().append('g')
           .attr('class', 'model');
-        /*
-        modelEnter.append('rect')
-          .attr('x', 0)
-          .attr('y', 0)
-          .attr('width', mWidth)
-          .attr('height', mHeight);
-		*/
-        modelEnter.append('text')
-          .attr('x', -20)
-          .attr('y', 0);
-
+        
+		//create model MENU
+        var modelMenuEnter = modelEnter.append('g')
+          .attr('class', 'model-menu')
+          .attr('transform', 'translate(0,-240)');
+        
+        var modelMenu = model.select('g.model-menu');
+        
+        makeButton(modelMenuEnter, 'C', 0, 200)
+        .on('click', function(d){
+          //add new model to clicked row
+          scope.$apply(function(){
+            scope.data.models.push({id: uuid4.generate(), p: d.value.id});
+          })
+        });
+        
+        makeButton(modelMenuEnter, 'D', 40, 200)
+        .on('click', function(d){
+          //delete a model
+          scope.$apply(function(){
+            //TODO: handle migration cases
+            scope.data.models.splice(scope.data.models.indexOf(d.value), 1);
+          })
+        });
+		
+		modelMenuEnter
+		.append('foreignObject')
+		  .attr('width', function(d){return d.value.width;})
+		  .attr('height', 100)
+		  .append('xhtml:body')
+		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+		  .append('input')
+		  .attr('class', 'model-name')
+		  .attr('placeholder', 'Iteration Title')
+		  .on('change', function(d, i){
+			 var element = this;
+			 scope.$apply(function(){
+				 scope.data.models[i].name = d3.select(element).node().value;
+			 }); 
+		  });
+		
+		//update  
+		modelMenu.select('input.model-name').attr('value', function(d){return d.value.name});
          
         // DRAW OLD LINKS behind
 		var modelLinksEnter = modelEnter.append('g')
@@ -543,28 +579,6 @@ angular.module('bmlayersApp')
 		
 		link.exit().remove();
           
-        //create model MENU
-        var modelMenuEnter = modelEnter.append('g')
-          .attr('class', 'model-menu')
-          .attr('transform', 'translate(0,-40)');
-        
-        makeButton(modelMenuEnter, 'C')
-        .on('click', function(d){
-          //add new model to clicked row
-          scope.$apply(function(){
-            scope.data.models.push({id: uuid4.generate(), p: d.value.id});
-          })
-        });
-        
-        makeButton(modelMenuEnter, 'D', 40)
-        .on('click', function(d){
-          //delete a model
-          scope.$apply(function(){
-            //TODO: handle migration cases
-            scope.data.models.splice(scope.data.models.indexOf(d.value), 1);
-          })
-        });
-          
         function makeButton(selection, label, x, y){
           x = x || 0;
           y = y || 0;
@@ -587,9 +601,7 @@ angular.module('bmlayersApp')
         model.exit().remove();
           
         //model update
-        model.select('text').text(function(m){return m.key});
         model.attr('transform', function(m){return 'translate(' + m.value.x() + ',' + m.value.y() + ')';});
-        
         
         //modelDiff boxes
         var modelDiff = svg.selectAll('g.diff').data(d3.map(scope.models).entries().slice(1));
