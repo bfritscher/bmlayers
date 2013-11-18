@@ -27,7 +27,7 @@ angular.module('bmlayersApp')
         {id:'G', p:'F'}
       ]
     };
-    */
+*/
     function findElementById(array, id){
       for(var i=0; i < array.length; i++){
         if(array[i].id === id){
@@ -40,6 +40,7 @@ angular.module('bmlayersApp')
     $scope.$watch('data', function(){
       if($scope.data && $scope.data.models){
         var models = {};
+		var elements = {};
         $scope.data.models.forEach(function(m){
           var model = new Model(m)
           if(m.p){
@@ -49,31 +50,50 @@ angular.module('bmlayersApp')
           }
           models[m.id] = model;
         });
+		//augment elements && data integrity
         for(var id in $scope.data.elements){
-          var e = $scope.data.elements[id];
-          if(e.p){
-            e.parent = $scope.data.elements[e.p];
-          }
-          //FOR NOW set a default zone 
+			var e = $scope.data.elements[id];
+			//FOR NOW set a default zone 
           //TODO support no zone?
           if(!e.zone){
             e.zone = 'value_proposition';
           }
-          if(models[e.m]){
-            models[e.m].elements[e.id] = e;
-          }
+		  elements[e.id] = new Element($scope.data.elements[id]);
         }
+		//Element obj gets linked
+		for(var id in elements){
+		  var e = elements[id];
+          if(e.p){
+            e.parent = elements[e.p];
+			e.parent.children.push(e);
+          }
+          
+          if(models[e.m]){
+			var model = models[e.m];
+            model.elements[e.id] = e;
+			e.model = models[e.m];
+          }
+		  
+		  if(zones[e.zone]){
+			  e.zoneObj = zones[e.zone];
+		  }
+        }
+		
 		for(var id in $scope.data.links){
           var l = $scope.data.links[id];
 		  if(typeof l === 'object'){
 			  if(!l.getPoints){
 				l.getPoints = function(){
 					var elementFrom = $scope.data.elements[this.from];
-					var zoneFrom = zones[elementFrom.zone];
 					var elementTo = $scope.data.elements[this.to];
-					var zoneTo = zones[elementTo.zone];
-					return [{x: zoneFrom.x + elementFrom.x, y: zoneFrom.y + elementFrom.y},
-								{x: zoneTo.x + elementTo.x, y: zoneTo.y + elementTo.y}]  
+					if(elementFrom && elementTo){
+						var zoneFrom = zones[elementFrom.zone];
+						var zoneTo = zones[elementTo.zone];
+						return [{x: zoneFrom.x + elementFrom.x, y: zoneFrom.y + elementFrom.y},
+									{x: zoneTo.x + elementTo.x, y: zoneTo.y + elementTo.y}];
+					}else{
+						return [{x:0,y:0},{x:0,y:0}];
+					}
 				};
 			  }
 			  if(!l.points){
@@ -88,19 +108,26 @@ angular.module('bmlayersApp')
 			  var points = l.getPoints();
 			  var margin = 5;
 			  var margin2 = 10;
-			  l.points[0].x = Math.max(points[index].x - margin, Math.min(points[index].x + 100 + margin, l.points[0].x));
-			  l.points[0].y = Math.max(points[index].y - margin, Math.min(points[index].y + 40 + margin, l.points[0].y));
-			  index = 1;
-			  var index2 = l.points.length-1;
-			  l.points[index2].x = Math.max(points[index].x - margin2, Math.min(points[index].x + 100 + margin2, l.points[index2].x));
-			  l.points[index2].y = Math.max(points[index].y - margin2, Math.min(points[index].y + 40 + margin2, l.points[index2].y));
-			  
+			  var elementFrom = elements[l.from];
+			  var elementTo = elements[l.to];
+			  if(elementFrom && elementTo){
+				  l.points[0].x = Math.max(points[index].x - margin, Math.min(points[index].x + elementFrom.width + margin, l.points[0].x));
+				  l.points[0].y = Math.max(points[index].y - margin, Math.min(points[index].y + elementFrom.height + margin, l.points[0].y));
+				  index = 1;
+				  var index2 = l.points.length-1;
+				  l.points[index2].x = Math.max(points[index].x - margin2, Math.min(points[index].x + elementTo.width + margin2, l.points[index2].x));
+				  l.points[index2].y = Math.max(points[index].y - margin2, Math.min(points[index].y + elementTo.height + margin2, l.points[index2].y));
+				  
+				  elementFrom.links[id] = l;
+			  	  elementTo.links[id] = l;
+			  }
 			  if(models[l.m]){
 				models[l.m].links[id] = l;
 			  }
 		  }
         }  
         $scope.models = models;
+		$scope.elements = elements;
         
         
         calculatePosition($scope.models['A'], 0, 0);
@@ -190,7 +217,24 @@ angular.module('bmlayersApp')
 			name: 'revenue_streams'
 		}
     };
-    
+    function Element(obj){
+		this.id = obj.id;
+		this.m = obj.m;
+		this.type = obj.type;
+		this.x = obj.x;
+		this.y = obj.y;
+		this.p = obj.p;
+		this.zone = obj.zone;
+		
+		this.model;
+		this.parent;
+		this.children = [];
+		this.links = {};
+		this.zoneObj;
+		this.width = 100;
+		this.height = 40;
+		
+	}
     
     function Model(obj){
       this.id = obj.id;
@@ -535,8 +579,8 @@ angular.module('bmlayersApp')
         elementEnter.append('rect')
           .attr('x',0)
           .attr('y',0)
-          .attr('width', 100)
-          .attr('height', 40)
+          .attr('width', function(d){return d.value.width;})
+          .attr('height', function(d){return d.value.height;})
           
         elementEnter.append('text')
           .attr('x', 10)
@@ -634,8 +678,8 @@ angular.module('bmlayersApp')
           elementEnter.append('rect')
             .attr('x',0)
             .attr('y',0)
-            .attr('width', 100)
-            .attr('height', 40)
+            .attr('width', function(d){return d.value.width;})
+            .attr('height', function(d){return d.value.height;})
             
           /*
           elementEnter.append('text')
@@ -645,8 +689,8 @@ angular.module('bmlayersApp')
 		  
 		  elementEnter
 		  .append('foreignObject')
-		  .attr('width', 100)
-		  .attr('height', 40)
+		  .attr('width', function(d){return d.value.width;})
+		  .attr('height', function(d){return d.value.height;})
 		  .append('xhtml:body')
 		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
 		  .append('div');
@@ -696,8 +740,8 @@ angular.module('bmlayersApp')
           elementEnter.append('rect')
             .attr('x',0)
             .attr('y',0)
-            .attr('width', 100)
-            .attr('height', 40)
+            .attr('width', function(d){return d.value.width;})
+            .attr('height', function(d){return d.value.height;})
             
           elementEnter.append('text')
             .attr('x', 10)
