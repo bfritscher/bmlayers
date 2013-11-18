@@ -168,7 +168,8 @@ angular.module('bmlayersApp')
     
     var mWidth = 1280;
     var mHeight = 900;
-    var rowSpacing = 360;
+    var rowSpacing = 700;
+	var colSpacing = 300;
     
     var zones = {
 		partner_network: {
@@ -275,11 +276,13 @@ angular.module('bmlayersApp')
       this.elements = {};
 	  this.links = {};
       this.x = function(){
-        return this.column * 2 * mWidth
+        return this.column * (2 * mWidth + colSpacing);
       };
       this.y = function(){
         return this.row * (mHeight + rowSpacing);
       };
+	  this.colSpacing = colSpacing;
+	  this.rowSpacing = rowSpacing;
 	  this.width = mWidth;
 	  this.height = mHeight;
       this.zones = zones;
@@ -327,7 +330,7 @@ angular.module('bmlayersApp')
     }
   }]);
 angular.module('bmlayersApp')
-  .directive('test', ['$filter', 'uuid4', '$compile', function($filter, uuid4, $compile) {
+  .directive('evolution', ['$filter', 'uuid4', '$compile', function($filter, uuid4, $compile) {
     return function(scope, elem, attrs) {
       
       var zoom = d3.behavior.zoom()
@@ -414,6 +417,8 @@ angular.module('bmlayersApp')
           })
         });
 		
+		
+		
 		modelMenuEnter
 		.append('foreignObject')
 		  .attr('width', function(d){return d.value.width;})
@@ -428,6 +433,26 @@ angular.module('bmlayersApp')
 			 scope.$apply(function(){
 				 scope.data.models[i].name = d3.select(element).node().value;
 			 }); 
+		  });
+		  
+		
+		  
+		 modelMenuEnter.append('foreignObject')
+		  .attr('width', 100)
+		  .attr('height', 100)
+		  .attr('y', 1150)
+		  .attr('x', 0)
+		  //.attr('requiredExtensions', 'http://www.w3.org/1999/xhtml') not working in chrome
+		  .append('xhtml:body')
+		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+		  .append('xhtml:div')
+		  .attr('class', 'config')
+		  .html(function(d, i){ return '<p>test: <span  ng-bind="data.models['+i+'].name"></span> <input type="text" ng-model="data.models['+i+'].name" /></p>';})
+		  .on('click', function(d){
+			  console.log(d3.event, this);
+		  })
+		  .each(function(d){
+			 $compile(this)(scope);
 		  });
 		
 		//update  
@@ -583,7 +608,8 @@ angular.module('bmlayersApp')
           x = x || 0;
           y = y || 0;
           var button = selection.append('g')
-          .attr('transform', 'translate(' + x + ',' + y + ')');
+          .attr('transform', 'translate(' + x + ',' + y + ')')
+		  .attr('class', 'button');
           button.append('rect')
           .attr('x', 0)
           .attr('y', 0)
@@ -607,7 +633,7 @@ angular.module('bmlayersApp')
         var modelDiff = svg.selectAll('g.diff').data(d3.map(scope.models).entries().slice(1));
         var modelDiffEnter = modelDiff.enter().append('g')
           .attr('class', 'diff');
-        modelDiff.attr('transform', function(m){return 'translate(' + (m.value.x()- m.value.width) + ',' + m.value.y() + ')';});
+        modelDiff.attr('transform', function(m){return 'translate(' + (m.value.x()- m.value.width - m.value.colSpacing/2) + ',' + m.value.y() + ')';});
         
         modelDiff.exit().remove();
         

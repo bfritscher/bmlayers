@@ -7,6 +7,11 @@
     box-sizing: border-box;
 }
 
+html, body, .view-container{
+	height: 100%;
+	width: 100%;
+}
+
 body, input, button, select, textarea{
     font-family: 'Roboto', "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -283,4 +288,60 @@ curve svg{
 
 .model-name:focus{
 	outline-offset: none;
+}
+
+.button{
+	cursor: pointer;
+	fill: none;
+}
+
+.button:hover rect{
+	fill: red;	
+}
+
+.new{
+  stroke: red;
+  fill: none;
+}
+
+g.zones rect{
+  stroke: black;	
+  fill: none;
+}
+.old{
+  background-color: blue;
+  color: red;
+}
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+g.new{
+  pointer-events: all;
+}
+g.old rect{
+  stroke: blue;
+}
+g.diff rect{
+  stroke: red;
+  fill:none;
+}
+
+g.zone{
+  pointer-events: all;
+}
+
+g.zone text{
+  alignment-baseline: hanging;
+  font-weight: bold;
+}
+
+.link path{
+  stroke: red;
+  stroke-width: 3px;
+  fill: none;
+}
+.link.old path{
+  stroke: blue;
 }
