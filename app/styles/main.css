@@ -257,65 +257,49 @@ tr.rule-cat > td {
   color: red;
 }
 
-curve {
-  z-index: 500;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-}
-
-
-
-.curve,
-.curveShadow,
-.line {
-  fill: none;
-  stroke-width: 1px;
-}
-
-.curve {
-  stroke: red;
-  stroke-width: 3px;
-}
-
-.curveShadow {
-  stroke: red;
-  stroke-width: 1px;
-}
-
-.line {
-  stroke: grey;
-  stroke-width: 1px;
-}
-
 .marker {
-  fill: inherit;
+  fill: red;
 }
 
 .control {
   fill: #ccc;
   stroke: #000;
   stroke-width: .5px;
-}
-
-.hide-control .control,
-.hide-control .line {
   display: none;
 }
 
-.model-name {
+.edit .control{
+  display: block;
+}
+
+input.model-name{
+  font-size: 120px;
+  line-height: 120px;
+  height: 200px;
+}
+
+input.model-dname{
+  font-size: 90px;
+  line-height: 90px;
+  height: 150px;
+}
+input.model-name, input.model-dname {
   text-align: center;
-  font-size: 80px;
-  line-height: 100px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   border: none;
   width: 100%;
+  display: block;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  padding: 0;
 }
 
-.model-name:focus {
-  outline-offset: none;
+input.model-name:focus, input.model-dname:focus {
+  outline-offset: 0;
+  box-shadow: none;
 }
 
 .button {
@@ -378,4 +362,13 @@ g.zone text {
 
 .link.old path {
   stroke: blue;
+}
+
+#rightmenu{
+  background-color: red;
+  width: 250px;
+  height: 600px;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
