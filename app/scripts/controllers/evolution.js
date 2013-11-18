@@ -41,6 +41,20 @@ angular.module('bmlayersApp')
       if($scope.data && $scope.data.models){
         var models = {};
 		var elements = {};
+		//be sure to have necessary structure
+		if(!$scope.data.models){
+			$scope.data.models = [];
+		}
+		if($scope.data.models.length === 0){
+			$scope.data.models.push({id: uuid4.generate()});
+		}
+		if(!$scope.data.elements){
+			$scope.data.elements = {};
+		}
+		if(!$scope.data.links){
+			$scope.data.links = {};
+		}
+		//parse data
         $scope.data.models.forEach(function(m){
           var model = new Model(m)
           if(m.p){
@@ -53,12 +67,18 @@ angular.module('bmlayersApp')
 		//augment elements && data integrity
         for(var id in $scope.data.elements){
 			var e = $scope.data.elements[id];
-			//FOR NOW set a default zone 
-          //TODO support no zone?
-          if(!e.zone){
-            e.zone = 'value_proposition';
-          }
-		  elements[e.id] = new Element($scope.data.elements[id]);
+			if(typeof e === 'object'){
+				//FOR NOW set a default zone 
+			  //TODO support no zone?
+			  if(!e.zone){
+				e.zone = 'value_proposition';
+			  }
+			  if(!models[e.m]){
+				  //recover lost elements by adding it to model 0;
+				  e.m = $scope.data.models[0].id;
+			  }
+			  elements[e.id] = new Element($scope.data.elements[id]);
+			}
         }
 		//Element obj gets linked
 		for(var id in elements){
@@ -67,12 +87,9 @@ angular.module('bmlayersApp')
             e.parent = elements[e.p];
 			e.parent.children.push(e);
           }
-          
-          if(models[e.m]){
-			var model = models[e.m];
-            model.elements[e.id] = e;
-			e.model = models[e.m];
-          }
+		  var model = models[e.m];
+		  model.elements[e.id] = e;
+		  e.model = models[e.m];
 		  
 		  if(zones[e.zone]){
 			  e.zoneObj = zones[e.zone];
@@ -82,6 +99,7 @@ angular.module('bmlayersApp')
 		for(var id in $scope.data.links){
           var l = $scope.data.links[id];
 		  if(typeof l === 'object'){
+			  l.id = id;
 			  if(!l.getPoints){
 				l.getPoints = function(){
 					var elementFrom = $scope.data.elements[this.from];
@@ -89,8 +107,8 @@ angular.module('bmlayersApp')
 					if(elementFrom && elementTo){
 						var zoneFrom = zones[elementFrom.zone];
 						var zoneTo = zones[elementTo.zone];
-						return [{x: zoneFrom.x + elementFrom.x, y: zoneFrom.y + elementFrom.y},
-									{x: zoneTo.x + elementTo.x, y: zoneTo.y + elementTo.y}];
+						return [{x: zoneFrom.x + elementFrom.x || 0 , y: zoneFrom.y + elementFrom.y || 0 },
+									{x: zoneTo.x + elementTo.x || 0 , y: zoneTo.y + elementTo.y || 0 }];
 					}else{
 						return [{x:0,y:0},{x:0,y:0}];
 					}
@@ -118,8 +136,8 @@ angular.module('bmlayersApp')
 				  l.points[index2].x = Math.max(points[index].x - margin2, Math.min(points[index].x + elementTo.width + margin2, l.points[index2].x));
 				  l.points[index2].y = Math.max(points[index].y - margin2, Math.min(points[index].y + elementTo.height + margin2, l.points[index2].y));
 				  
-				  elementFrom.links[id] = l;
-			  	  elementTo.links[id] = l;
+				  elementFrom.links.push(l);
+			  	  elementTo.links.push(l);
 			  }
 			  if(models[l.m]){
 				models[l.m].links[id] = l;
@@ -229,11 +247,20 @@ angular.module('bmlayersApp')
 		this.model;
 		this.parent;
 		this.children = [];
-		this.links = {};
+		this.links = [];
 		this.zoneObj;
 		this.width = 100;
 		this.height = 40;
-		
+		this.handleDelete = function(){
+			if(this.children.length === 0){
+				for(var i = 0; i < this.links.length; i++){					
+					delete $scope.data.links[this.links[i].id];
+				}
+				delete $scope.data.elements[this.id];
+			}else{
+				alert('cannot delete, has children: ' + this.children.map(function(e){return e.model.id + '#'+ e.id;}).join(', '));
+			}
+		}
 	}
     
     function Model(obj){
@@ -396,9 +423,13 @@ angular.module('bmlayersApp')
           
           
         //Create ZONES
-        var zoneEnter = modelEnter.selectAll('g.zone').data(function(d){
+		modelEnter.append('g')
+		.attr('class', 'zones')
+		.attr('transform', 'translate(0,0)');
+		
+        var zoneEnter = modelEnter.select('g.zones').selectAll('g.zone').data(function(d){
           return d3.map(d.value.zones).entries();
-        }).enter().append('g')
+        }, function(d){return d.key;}).enter().append('g')
           .attr('transform', function(d){return 'translate(' + d.value.x + ',' + d.value.y + ')'})
           .attr('class', function(d){
             return d.value.name + ' zone';
@@ -623,7 +654,13 @@ angular.module('bmlayersApp')
         
         function dragstart(d){
           d3.selectAll('g.zone').style('pointer-events', 'all');          
-          d3.select(this).style('pointer-events', 'none');          
+          d3.select(this).style('pointer-events', 'none');  
+		  //make dragged top on in zone
+		  var node = d3.select(this).node();
+		  node.parentNode.appendChild(node);
+		  //zone order
+		  node.parentNode.parentNode.appendChild(node.parentNode);
+		  d.__origin__ = [d.value.x, d.value.y];
         }
           
         function dragmove(d){
@@ -640,22 +677,38 @@ angular.module('bmlayersApp')
           var model = d3.select(d3.event.sourceEvent.target.parentElement).data()[0];
           var oldzone = scope.models[d.value.m].zones[d.value.zone];
           if(zone){
-              scope.$apply(function(){
-				//TODO BETTER WAY TO ID MODEL
-                if(!model.value.from && model.value.id && model.value.id !== scope.data.elements[d.key].m){
-                  var oldModel = scope.models[scope.data.elements[d.key].m];
-                  //TODO: HANDLE DEPENDENCIES
-                  //THIS only works if models have same zone positions
-                  scope.data.elements[d.key].m = model.value.id;
-                  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x + oldModel.x() - model.value.x();
-                  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y + oldModel.y() - model.value.y();
-                }else{
-                  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x;
-                  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y;
-                }
-                scope.data.elements[d.key].zone = zone.name;                
-                draw();
-              });
+			  if(zone.constructor.name === 'Element'){
+				  scope.$apply(function(){
+					 //create LINK
+					 var id = uuid4.generate();
+					 scope.data.links[id] = {
+						 from: d.value.id,
+						 to: zone.id,
+						 m: d.value.m,
+						 id: id
+					 };
+					 scope.data.elements[d.key].x = d.__origin__[0];
+					 scope.data.elements[d.key].y = d.__origin__[1];
+					 draw(); 
+				  });
+			  }else{
+				  scope.$apply(function(){
+					//TODO BETTER WAY TO ID MODEL
+					if(model.value.constructor.name === 'Model' && model.value.id !== scope.data.elements[d.key].m){
+					  var oldModel = scope.models[scope.data.elements[d.key].m];
+					  //TODO: HANDLE DEPENDENCIES
+					  //THIS only works if models have same zone positions
+					  scope.data.elements[d.key].m = model.value.id;
+					  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x + oldModel.x() - model.value.x();
+					  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y + oldModel.y() - model.value.y();
+					}else{
+					  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x;
+					  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y;
+					}
+					scope.data.elements[d.key].zone = zone.name;                
+					draw();
+				  });
+			  }
           }
           d3.select(this).style('pointer-events', 'all');       
         }
@@ -670,7 +723,7 @@ angular.module('bmlayersApp')
           
           element = model.select('g.' + zone.name).selectAll('g.new').data(function(m){
             return d3.map(m.value.elements).entries().filter(function(d){return d.value.zone === zone.name;});
-          });
+          }, function(d){ return d.key;});
           
           elementEnter = element.enter().append('g')
             .attr('class', 'new');
@@ -701,8 +754,7 @@ angular.module('bmlayersApp')
             //DELETE A ELEMENT
             d3.event.stopPropagation(); 
             scope.$apply(function(){
-              //TODO HANDLER dependencies!
-              delete scope.data.elements[d.key];
+				d.value.handleDelete();  
             });
           });
             
