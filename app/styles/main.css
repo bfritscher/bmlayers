@@ -1,347 +1,381 @@
 /* Will be compiled down to a single stylesheet with your sass files */
+
 @import url(http://fonts.googleapis.com/css?family=Roboto:400,700,700italic,400italic);
 
-*, *:after, *:before {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
+*,
+*:after,
+*:before {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
 }
 
-html, body, .view-container{
-	height: 100%;
-	width: 100%;
+html,
+body,
+.view-container {
+  height: 100%;
+  width: 100%;
 }
 
-body, input, button, select, textarea{
-    font-family: 'Roboto', "Helvetica Neue", Helvetica, Arial, sans-serif;
+body,
+input,
+button,
+select,
+textarea {
+  font-family: 'Roboto', "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-.elements{
-	height: -webkit-calc(100% - 20px);
-    padding: 5px;
-	overflow-y: auto;
+.elements {
+  height: -webkit-calc(100% - 20px);
+  padding: 5px;
+  overflow-y: auto;
 }
 
-.element{
-	background-color: #e0e0e0;
-    padding: 0 2px 2px 2px;
-	border-radius: 3px;
-    margin-bottom: 4%;
-    margin-left: 1.5em;
-	text-align: center;
-    position:relative;
-    float:left;
+.element {
+  background-color: #e0e0e0;
+  padding: 0 2px 2px 2px;
+  border-radius: 3px;
+  margin-bottom: 4%;
+  margin-left: 1.5em;
+  text-align: center;
+  position: relative;
+  float: left;
 }
 
-.element input, .element textarea{
-    border: 0;
-    -moz-transition: none;
-    -webkit-transition: none;
-    transition: none;
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
-    -webkit-border-radius: 0;
-    -moz-border-radius: 0;
-    border-radius: 0;
-    background-color: transparent;
-    text-align: center;
-    padding: 0;
-    margin: 0;
-}
-.element textarea{
-    resize: none;
-    width: 100%;
-    overflow:hidden;
+.element input,
+.element textarea {
+  border: 0;
+  -webkit-transition: none;
+  transition: none;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  border-radius: 0;
+  background-color: transparent;
+  text-align: center;
+  padding: 0;
+  margin: 0;
 }
 
-.element input:focus, .element textarea:focus{
-    -webkit-box-shadow:none;
-    -moz-box-shadow:none;
-    box-shadow:none;
+.element textarea {
+  resize: none;
+  width: 100%;
+  overflow: hidden;
 }
 
-.element .btn-remove{
-    display: none;
-    position: absolute;
-    bottom: 0;
-    right: 0;
+.element input:focus,
+.element textarea:focus {
+  -webkit-box-shadow: none;
+  box-shadow: none;
 }
-.element:hover .btn-remove{
-    display: inline;
+
+.element .btn-remove {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+.element:hover .btn-remove {
+  display: inline;
 }
 
 .element .errors {
-    color: red;
+  color: red;
 }
 
-.zone.zoomed .element{
-	margin-left: 1.3em;
-}
-    
-.element .tag{
-    display: inline-block;
-    margin-left: 3px;
-    margin-right: 3px;
-    width: 12.5%;
-    height: 5px;    
-    vertical-align: top;
-}
-    .element .tag.hidden{
-        visibility: hidden;
-    }
-
-    .element .tags{
-        line-height: 5px;
-        text-align: center;
-        white-space: nowrap;
-        padding-bottom: 4px;
-    }
-
-    .tags:hover{
-        line-height: 30px;
-    }
-    
-    .element .tags:hover .tag{
-        height: 25px;
-    }
-    .element .tags:hover .tag.hidden{
-        visibility: visible;
-        height: 15px;
-        opacity: 0.5;
-    }
-    .element .tags:hover .tag.hidden:hover{
-        opacity: 1;
-    }
-    .element .tag:hover{
-        cursor:pointer;
-        
-    }
-    
-
-.element-errors{
-    position: absolute;
-    left: 12px;
-    bottom: 5px;
+.zone.zoomed .element {
+  margin-left: 1.3em;
 }
 
-.sortable-placeholder{
-	background-color: red;
-    float:left;
+.element .tag {
+  display: inline-block;
+  margin-left: 3px;
+  margin-right: 3px;
+  width: 12.5%;
+  height: 5px;
+  vertical-align: top;
+}
+
+.element .tag.hidden {
+  visibility: hidden;
+}
+
+.element .tags {
+  line-height: 5px;
+  text-align: center;
+  white-space: nowrap;
+  padding-bottom: 4px;
+}
+
+.tags:hover {
+  line-height: 30px;
+}
+
+.element .tags:hover .tag {
+  height: 25px;
+}
+
+.element .tags:hover .tag.hidden {
+  visibility: visible;
+  height: 15px;
+  opacity: 0.5;
+}
+
+.element .tags:hover .tag.hidden:hover {
+  opacity: 1;
+}
+
+.element .tag:hover {
+  cursor: pointer;
+}
+
+.element-errors {
+  position: absolute;
+  left: 12px;
+  bottom: 5px;
+}
+
+.sortable-placeholder {
+  background-color: red;
+  float: left;
 }
 
 .zone {
-	border: 1px solid #333;
-	position: absolute;
-	background-color: white;
-    -webkit-transition: width 0.5s  ease-in-out, left 0.5s ease-in-out,  top 0.5s ease-in-out,  height 0.5s ease-in-out, z-index 0 linear 0.5s;
+  border: 1px solid #333;
+  position: absolute;
+  background-color: white;
+  -webkit-transition: width 0.5s  ease-in-out, left 0.5s ease-in-out,  top 0.5s ease-in-out,  height 0.5s ease-in-out, z-index 0 linear 0.5s;
 }
-    .zone h2{
-        font-size: 1em;
-        margin: 0;
-        line-height: 120%;
-    }
-    .zone h2 .btn{
-        padding: 0;
-        text-decoration: none;
-    }
+
+.zone h2 {
+  font-size: 1em;
+  margin: 0;
+  line-height: 120%;
+}
+
+.zone h2 .btn {
+  padding: 0;
+  text-decoration: none;
+}
+
 .zone:hover {
-    z-index:1;
-    -webkit-transition: width 0.5s  ease-in-out, left 0.5s ease-in-out,  top 0.5s ease-in-out,  height 0.5s ease-in-out, z-index 0 linear 0;
+  z-index: 1;
+  -webkit-transition: width 0.5s  ease-in-out, left 0.5s ease-in-out,  top 0.5s ease-in-out,  height 0.5s ease-in-out, z-index 0 linear 0;
 }
 
-   
-.layers{
-	padding: 5px 0;
+.layers {
+  padding: 5px 0;
 }
 
-.layer{
-	display:inline-block;
-	width: 150px;
-	border-left: 5px solid red;
-	padding: 2px;
+.layer {
+  display: inline-block;
+  width: 150px;
+  border-left: 5px solid red;
+  padding: 2px;
 }
 
 .invalid {
-    border: 2px solid rgba(185, 74, 72, 0.8);    
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(185, 74, 72, 0.6);
+  border: 2px solid rgba(185, 74, 72, 0.8);
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(185, 74, 72, 0.6);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(185, 74, 72, 0.6);
 }
 
 .leftnav {
-    width: 180px;
-    float:left;
+  width: 180px;
+  float: left;
 }
 
 .view {
-    width: -webkit-calc(100% - 470px);
-    position: relative;
-    float:left;
+  width: -webkit-calc(100% - 470px);
+  position: relative;
+  float: left;
 }
 
-.view .view-ratio{
-    padding-bottom: 69%;
+.view .view-ratio {
+  padding-bottom: 69%;
 }
 
-.view .content{
-    position: absolute;
-    top:0;
-    bottom:0;
-    left:0;
-    right:0;
-    border: 1px solid #333;
-}
-.clear{
-    clear:both;
-}
-.rules-container{
-    width: 290px;
-    position:absolute;
-    top:0;
-    right:0;
-    bottom:0;
-    overflow:auto;
-}
-.rules-container .nav{
-    margin-bottom: 0;
-}
-.rules-container .rules{
-    padding: 5px;
-}
-.rule h3{
-    font-size: 120%;
-    margin: 10px 0 0 0;
-    line-height: 120%;
+.view .content {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border: 1px solid #333;
 }
 
-tr.rule-cat > td{
-	padding-top: 4em;	
+.clear {
+  clear: both;
 }
+
+.rules-container {
+  width: 290px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+}
+
+.rules-container .nav {
+  margin-bottom: 0;
+}
+
+.rules-container .rules {
+  padding: 5px;
+}
+
+.rule h3 {
+  font-size: 120%;
+  margin: 10px 0 0 0;
+  line-height: 120%;
+}
+
+tr.rule-cat > td {
+  padding-top: 4em;
+}
+
 .rules-list {
-	margin: 40px;
+  margin: 40px;
 }
-.rules-list h4{
-	margin-top: 0;
+
+.rules-list h4 {
+  margin-top: 0;
 }
-.rules-list td{
-	vertical-align: top;
-	padding-right: 3em;
-	padding-bottom: 1em;
+
+.rules-list td {
+  vertical-align: top;
+  padding-right: 3em;
+  padding-bottom: 1em;
 }
-.rules-list th{
-	padding-bottom: 1em;
+
+.rules-list th {
+  padding-bottom: 1em;
 }
-.rules-list .notimp{
-	color: red;
+
+.rules-list .notimp {
+  color: red;
+}
+
+curve {
+  z-index: 500;
+  position: absolute;
+  width: 100%;
+  height: 100%;
 }
 
 
-curve{
-	z-index: 500;
-	position: absolute;
-	width: 100%;
-	height: 100%;
-}
 
-curve svg{
-	
-}
-
-.curve, .curveShadow, .line {
+.curve,
+.curveShadow,
+.line {
   fill: none;
   stroke-width: 1px;
 }
+
 .curve {
   stroke: red;
   stroke-width: 3px;
 }
-.curveShadow{
+
+.curveShadow {
   stroke: red;
   stroke-width: 1px;
 }
-.line{
+
+.line {
   stroke: grey;
   stroke-width: 1px;
 }
-.marker{
+
+.marker {
   fill: inherit;
 }
+
 .control {
   fill: #ccc;
   stroke: #000;
   stroke-width: .5px;
 }
 
-.hide-control .control, .hide-control .line{
-	display: none;	
+.hide-control .control,
+.hide-control .line {
+  display: none;
 }
 
 .model-name {
-	text-align:center;
-	font-size: 80px;
-	line-height: 100px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	border: none;
-	width: 100%;
+  text-align: center;
+  font-size: 80px;
+  line-height: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: none;
+  width: 100%;
 }
 
-.model-name:focus{
-	outline-offset: none;
+.model-name:focus {
+  outline-offset: none;
 }
 
-.button{
-	cursor: pointer;
-	fill: none;
+.button {
+  cursor: pointer;
+  fill: none;
+  stroke: red;
 }
 
-.button:hover rect{
-	fill: red;	
+.button:hover rect {
+  fill: red;
 }
 
-.new{
+.new {
   stroke: red;
   fill: none;
 }
 
-g.zones rect{
-  stroke: black;	
+g.zones rect {
+  stroke: black;
   fill: none;
 }
-.old{
+
+.old {
   background-color: blue;
   color: red;
 }
+
 .overlay {
   fill: none;
   pointer-events: all;
 }
 
-g.new{
+g.new {
   pointer-events: all;
 }
-g.old rect{
+
+g.old rect {
   stroke: blue;
 }
-g.diff rect{
+
+g.diff rect {
   stroke: red;
-  fill:none;
+  fill: none;
 }
 
-g.zone{
+g.zone {
   pointer-events: all;
 }
 
-g.zone text{
+g.zone text {
   alignment-baseline: hanging;
   font-weight: bold;
 }
 
-.link path{
+.link path {
   stroke: red;
   stroke-width: 3px;
   fill: none;
 }
-.link.old path{
+
+.link.old path {
   stroke: blue;
 }

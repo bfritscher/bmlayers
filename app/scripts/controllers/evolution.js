@@ -147,8 +147,12 @@ angular.module('bmlayersApp')
         $scope.models = models;
 		$scope.elements = elements;
         
-        
-        calculatePosition($scope.models['A'], 0, 0);
+        var row = 0;
+		for(var key in $scope.models){
+			if(!$scope.models[key].parent){
+        		row = calculatePosition($scope.models[key], 0, row);
+			}
+		}
       }
      function calculatePosition(model, column, row){
         var margin = 10;
@@ -845,4 +849,4 @@ angular.module('bmlayersApp')
       }
       draw();
   };
-  }])
+  }]);
