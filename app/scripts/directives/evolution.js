@@ -59,6 +59,7 @@ angular.module('bmlayersApp')
       */
          
       function draw(){
+		  console.log('draw');
         var svg = d3.select(elem[0]).select('g');  
                 
         //Model
@@ -281,14 +282,13 @@ angular.module('bmlayersApp')
 		  .origin(function(d){ 
 		  	return {x: d.x, y: d.y};
 		  })
-		  .on("drag", function(d, i) {
+		  .on('drag', function(d, i) {
 			var parent = this.parentElement;
 			var x = d3.event.x
 			var y = d3.event.y			
 			scope.$apply(function(){
 				scope.data.links[d3.select(parent).datum().key].points[i].x = x;
 			  	scope.data.links[d3.select(parent).datum().key].points[i].y = y;
-				draw();
 			});
 		  }));
 		
@@ -387,63 +387,79 @@ angular.module('bmlayersApp')
         
         function dragstart(d){
           d3.selectAll('g.zone').style('pointer-events', 'all');          
-          d3.select(this).style('pointer-events', 'none');  
+          d3.select(this).style('pointer-events', 'none'); 
 		  //make dragged top on in zone
 		  var node = d3.select(this).node();
 		  node.parentNode.appendChild(node);
 		  //zone order
 		  node.parentNode.parentNode.appendChild(node.parentNode);
 		  d.__origin__ = [d.value.x, d.value.y];
+		  d.value.__dragging__ = true;
         }
           
         function dragmove(d){
-          scope.$apply(function(){
-            scope.data.elements[d.key].x = d3.event.x;
-            scope.data.elements[d.key].y = d3.event.y;
-            draw();
-          });
+			if(d.value.type !== 'D'){
+			  //scope.$apply(function(){
+				scope.data.elements[d.key].x = d3.event.x;
+				scope.data.elements[d.key].y = d3.event.y;
+			  //});
+			  d.value.x = d3.event.x;
+			  d.value.y = d3.event.y;
+			  d.value.dragx = d3.event.x;
+			  d.value.dragy = d3.event.y;
+			  draw();
+			}
         }
         
         function dragend(d){
-         //TODO: fix remove all external dependencies
-          var zone = d3.select(d3.event.sourceEvent.target).data()[0].value;
-          var model = d3.select(d3.event.sourceEvent.target.parentElement).data()[0];
-          var oldzone = scope.models[d.value.m].zones[d.value.zone];
-          if(zone){
-			  if(zone.constructor.name === 'Element'){
-				  scope.$apply(function(){
-					 //create LINK
-					 //TODO check same MODEL
-					 var id = uuid4.generate();
-					 scope.data.links[id] = {
-						 from: d.value.id,
-						 to: zone.id,
-						 m: d.value.m,
-						 id: id
-					 };
-					 scope.data.elements[d.key].x = d.__origin__[0];
-					 scope.data.elements[d.key].y = d.__origin__[1];
-					 draw(); 
-				  });
-			  }else{
-				  scope.$apply(function(){
-					//TODO BETTER WAY TO ID MODEL
-					if(model.value.constructor.name === 'Model' && model.value.id !== scope.data.elements[d.key].m){
-					  var oldModel = scope.models[scope.data.elements[d.key].m];
-					  //TODO: HANDLE DEPENDENCIES
-					  //THIS only works if models have same zone positions
-					  scope.data.elements[d.key].m = model.value.id;
-					  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x + oldModel.x() - model.value.x();
-					  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y + oldModel.y() - model.value.y();
-					}else{
-					  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x;
-					  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y;
-					}
-					scope.data.elements[d.key].zone = zone.name;                
-					draw();
-				  });
+			d.value.__dragging__ = false;
+		  if(Math.abs(scope.data.elements[d.key].x-d.__origin__[0]) < 2 && Math.abs(scope.data.elements[d.key].y-d.__origin__[1]) <2)	{
+			  alert('click');
+		  }else{
+			 //TODO: fix remove all external dependencies
+			  var zone = d3.select(d3.event.sourceEvent.target).data()[0].value;
+			  var model = d3.select(d3.event.sourceEvent.target.parentElement).data()[0];
+			  var oldzone = scope.models[d.value.m].zones[d.value.zone];
+			  if(zone){
+				  if(zone.constructor.name === 'Element'){
+					  scope.$apply(function(){
+						 //create LINK
+						 //TODO check same MODEL
+						 var id = uuid4.generate();
+						 scope.data.links[id] = {
+							 from: d.value.id,
+							 to: zone.id,
+							 m: d.value.m,
+							 id: id
+						 };
+						 scope.data.elements[d.key].x = d.__origin__[0];
+						 scope.data.elements[d.key].y = d.__origin__[1];
+					  });
+				  }else{
+					  //only A can really be moved
+					  if(d.value.type === 'A'){
+						  scope.$apply(function(){
+							//TODO BETTER WAY TO ID MODEL
+							if(model.value.constructor.name === 'Model' && model.value.id !== scope.data.elements[d.key].m){
+							  var oldModel = scope.models[scope.data.elements[d.key].m];
+							  //TODO: HANDLE DEPENDENCIES
+							  //THIS only works if models have same zone positions
+							  scope.data.elements[d.key].m = model.value.id;
+							  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x + oldModel.x() - model.value.x();
+							  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y + oldModel.y() - model.value.y();
+							}else{
+							  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x;
+							  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y;
+							}
+							scope.data.elements[d.key].zone = zone.name;                
+						  });
+					  }else{
+						  //no data has changed need to manualy call draw
+						  draw();
+					  }
+				  }
 			  }
-          }
+		  }
           d3.select(this).style('pointer-events', 'all');       
         }
         
@@ -525,31 +541,30 @@ angular.module('bmlayersApp')
 		  .attr('height', function(d){return d.value.height;})
 		  .append('xhtml:body')
 		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-		  .append('div');
-            
+		  .append('div')            
             
 		  element.select('div').text(function(e){return e.key;});
           
           
           //Only add should be draggable (delete and change are relative to their previous)
-          elementEnter.filter(function(d){
-            return 'A' === d.value.type;
-          }).call(drag);
           
-          //if type D or C follow previous
-          element.filter(function(d){
-            return 'A' === d.value.type;
-          }).attr('transform', function(d){ return 'translate(' + (d.value.x || 0) + ',' + (d.value.y || 0) + ')';});
+          elementEnter.call(drag)
           
-          element.filter(function(d){
-            return 'A' !== d.value.type;
-          }).attr('transform', function(d){
-            return d.value.parent ? 'translate(' + (d.value.parent.x + 10 || 10) + ',' + (d.value.parent.y + 10 || 10) + ')' : '';
+          //if type D or C follow previous except if C is dragging
+          element.attr('transform', function(d){
+			if(d.value.type === 'A'){
+				
+				return 'translate(' + (d.value.x || 0) + ',' + (d.value.y || 0) + ')'; 
+			}else if(d.value.type === 'C' && d.value.__dragging__){
+				//WTF bug??? d.value.x does not return updated value..
+				return 'translate(' + (d.value.dragx || 0) + ',' + (d.value.dragy || 0) + ')'; 
+			}else{
+            	return d.value.parent ? 'translate(' + (d.value.parent.x + 10 || 10) + ',' + (d.value.parent.y + 10 || 10) + ')' : '';
+			}
           });
           element.exit().remove();
   
         }
       }
-      draw();
   };
   }]);

@@ -40,6 +40,7 @@ angular.module('bmlayersApp')
     $scope.$watch('data', function(){
 	
       if($scope.data && $scope.data.models){
+		  console.log('data');
         var models = {};
 		var elements = {};
 		//TODO broken be sure to have necessary structure
@@ -91,6 +92,9 @@ angular.module('bmlayersApp')
 		  var e = elements[id];
           if(e.p){
             e.parent = elements[e.p];
+			e.x = e.parent.x;
+			e.y = e.parent.y;
+			e.zone = e.parent.zone;
 			e.parent.children.push(e);
           }
 		  var model = models[e.m];
@@ -142,8 +146,8 @@ angular.module('bmlayersApp')
 				  l.points[index2].x = Math.max(points[index].x - margin2, Math.min(points[index].x + elementTo.width + margin2, l.points[index2].x));
 				  l.points[index2].y = Math.max(points[index].y - margin2, Math.min(points[index].y + elementTo.height + margin2, l.points[index2].y));
 				  
-				  elementFrom.links.push(l);
-			  	  elementTo.links.push(l);
+				  elementFrom.links[id] = l;
+			  	  elementTo.links[id] = l;
 			  }
 			  if(models[l.m]){
 				models[l.m].links[id] = l;
@@ -262,14 +266,14 @@ angular.module('bmlayersApp')
 		this.model;
 		this.parent;
 		this.children = [];
-		this.links = [];
+		this.links = {};
 		this.zoneObj;
 		this.width = eWidth;
 		this.height = eHeight;
 		this.handleDelete = function(){
 			if(this.children.length === 0){
-				for(var i = 0; i < this.links.length; i++){					
-					delete $scope.data.links[this.links[i].id];
+				for(var id in this.links){					
+					delete $scope.data.links[id];
 				}
 				delete $scope.data.elements[this.id];
 				return true;
@@ -277,6 +281,16 @@ angular.module('bmlayersApp')
 				alert('cannot delete, has children: ' + this.children.map(function(e){return e.model.id + '#'+ e.id;}).join(', '));
 				return false;
 			}
+		};
+		this.allLinks = function(){
+			var links = {};
+			if(this.parent){
+				links = this.parent.allLinks();
+			}
+			for(var id in this.links){
+				links[id] = this.links[id];
+			}
+			return links;
 		};
 	}
     
@@ -351,8 +365,8 @@ angular.module('bmlayersApp')
 			var element = this.elements[id];
 			//only add link if connected elements not deleted in this model
 			if('D' === element.type){
-				for(var lid=0; lid < element.parent.links.length; lid++){
-					delete links[element.parent.links[lid].id];
+				for(var lid in element.allLinks()){
+					delete links[lid];
 				}
 			}
 		}
