@@ -398,11 +398,14 @@ angular.module('bmlayersApp')
         }
           
         function dragmove(d){
-			if(d.value.type !== 'D'){
-			  //scope.$apply(function(){
+			if(d.value.type === 'A'){
+			  scope.$apply(function(){
 				scope.data.elements[d.key].x = d3.event.x;
 				scope.data.elements[d.key].y = d3.event.y;
-			  //});
+			  });
+			}
+			if(d.value.type === 'C'){
+				//hacks...
 			  d.value.x = d3.event.x;
 			  d.value.y = d3.event.y;
 			  d.value.dragx = d3.event.x;
@@ -414,7 +417,13 @@ angular.module('bmlayersApp')
         function dragend(d){
 			d.value.__dragging__ = false;
 		  if(Math.abs(scope.data.elements[d.key].x-d.__origin__[0]) < 2 && Math.abs(scope.data.elements[d.key].y-d.__origin__[1]) <2)	{
-			  alert('click');
+			  scope.$apply(function(){
+				if(scope.editElement && scope.editElement.id === d.value.id){
+				  scope.editElement = undefined;
+				}else{
+				  scope.editElement = d.value;
+				}
+			  });
 		  }else{
 			 //TODO: fix remove all external dependencies
 			  var zone = d3.select(d3.event.sourceEvent.target).data()[0].value;

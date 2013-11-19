@@ -37,6 +37,7 @@ angular.module('bmlayersApp')
 	};
 
     //transform DATA to linked objects
+	//TODO data changes should only update local models...
     $scope.$watch('data', function(){
 	
       if($scope.data && $scope.data.models){
@@ -276,6 +277,7 @@ angular.module('bmlayersApp')
 					delete $scope.data.links[id];
 				}
 				delete $scope.data.elements[this.id];
+				$scope.editElement = undefined;
 				return true;
 			}else{
 				alert('cannot delete, has children: ' + this.children.map(function(e){return e.model.id + '#'+ e.id;}).join(', '));

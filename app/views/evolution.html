@@ -2,9 +2,12 @@
 <div id="rightmenu" ng-show="editLink || editModel || editElement">
     <div ng-show="editElement">
         <h2>Element</h2>
+        <div ng-click="editElement=undefined">X</div>
+        <p>id: {{editElement.id}}</p>
+        <p>type: {{editElement.type}}</p>
         <p>name: <input type="text" ng-model="data.links[editLink.id].color" /></p>
         <p>color: ? tags? <input type="text" ng-model="data.links[editLink.id].color" /></p>
-        <p><button ng-click="editElement.handleDelete()" class="btn btn-danger">delete Element</button></p>
+        <p><button ng-click="editElement.handleDelete()" class="btn btn-danger">delete element</button></p>
     </div>
     <div ng-show="editLink">
         <h2>Mechanic</h2>

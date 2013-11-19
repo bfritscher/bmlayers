@@ -337,10 +337,6 @@ g.zones rect {
   pointer-events: all;
 }
 
-g.new {
-  pointer-events: all;
-}
-
 g.old rect {
   stroke: blue;
 }
