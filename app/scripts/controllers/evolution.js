@@ -6,6 +6,7 @@ angular.module('bmlayersApp')
     
     var ref = new Firebase('https://bm.firebaseio.com/bm1');
     angularFire(ref, $scope, 'data');
+    
     /*
     $scope.data = {
       elements: {
@@ -17,28 +18,36 @@ angular.module('bmlayersApp')
         '6': {id: 6, m:'F', type: 'D', p:1},
         '7': {id: 7, m:'G', type: 'A'}
       },
-      models: [
-        {id:'A'},
-        {id:'B', p:'A'},
-        {id:'C', p:'B', c:''},
-        {id:'D', p:'B', c:''},
-        {id:'E', p:'D'},
-        {id:'F', p:'B'},
-        {id:'G', p:'F'}
-      ]
+      models: {
+        'A': {id:'A'},
+        'B': {id:'B', p:'A'},
+        'C': {id:'C', p:'B', c:''},
+        'D': {id:'D', p:'B', c:''},
+        'E': {id:'E', p:'D'},
+        'F': {id:'F', p:'B'},
+        'G': {id:'G', p:'F'}
+      }
     };
-*/
+	*/
+
+	$scope.deleteLink = function(){
+		if($scope.editLink)	{
+			delete $scope.data.links[$scope.editLink.id];
+		}
+	};
+
     //transform DATA to linked objects
     $scope.$watch('data', function(){
+	
       if($scope.data && $scope.data.models){
         var models = {};
 		var elements = {};
-		//be sure to have necessary structure
+		//TODO broken be sure to have necessary structure
 		if(!$scope.data.models){
-			$scope.data.models = [];
-		}
-		if($scope.data.models.length === 0){
-			$scope.data.models.push({id: uuid4.generate()});
+			var obj = {};
+			var id = uuid4.generate();
+			obj[id] = {id: id};
+			$scope.data.models = obj;
 		}
 		if(!$scope.data.elements){
 			$scope.data.elements = {};
@@ -46,16 +55,21 @@ angular.module('bmlayersApp')
 		if(!$scope.data.links){
 			$scope.data.links = {};
 		}
-		//parse data
-        $scope.data.models.forEach(function(m){
-          var model = new Model(m)
-          if(m.p){
-            var parent = models[m.p];
-            model.parent = parent;
-            parent.children.push(model);
-          }
-          models[m.id] = model;
-        });
+		
+		//Augment model
+        for(var id in $scope.data.models){			
+		  var model = new Model($scope.data.models[id]);
+		  models[model.id] = model;
+        };
+		//link models
+		for(var id in models){			
+		  var model = models[id];
+		  if(model.parent){
+			var parent = models[model.parent];
+			model.parent = parent;
+			parent.children.push(model);
+		  }
+        };
 		//augment elements && data integrity
         for(var id in $scope.data.elements){
 			var e = $scope.data.elements[id];
@@ -66,8 +80,8 @@ angular.module('bmlayersApp')
 				e.zone = 'value_proposition';
 			  }
 			  if(!models[e.m]){
-				  //recover lost elements by adding it to model 0;
-				  e.m = $scope.data.models[0].id;
+				  //TODO FIX recover lost elements by adding it to model 0;
+				  e.m = $scope.data.models[Object.keys($scope.data.models)[0]].id;
 			  }
 			  elements[e.id] = new Element($scope.data.elements[id]);
 			}
@@ -117,7 +131,7 @@ angular.module('bmlayersApp')
 			  var index = 0;
 			  var points = l.getPoints();
 			  var margin = 5;
-			  var margin2 = 10;
+			  var margin2 = 16;
 			  var elementFrom = elements[l.from];
 			  var elementTo = elements[l.to];
 			  if(elementFrom && elementTo){
@@ -256,10 +270,12 @@ angular.module('bmlayersApp')
 					delete $scope.data.links[this.links[i].id];
 				}
 				delete $scope.data.elements[this.id];
+				return true;
 			}else{
 				alert('cannot delete, has children: ' + this.children.map(function(e){return e.model.id + '#'+ e.id;}).join(', '));
+				return false;
 			}
-		}
+		};
 	}
     
     function Model(obj){
@@ -332,5 +348,30 @@ angular.module('bmlayersApp')
 		}
 		return links;
 	  };
+	  this.handleDelete = function(){
+			if(this.children.length === 0){
+				var canDelete = true;
+				for(var key in this.elements){
+					canDelete = canDelete && this.elements[key].handleDelete();
+				}
+				if(canDelete){
+					delete $scope.data.models[this.id];
+					$scope.editModel = undefined;
+					return true;
+				}else{
+					//TODO better error
+					alert('delete failed try deleting remaining elements first');
+					return false;
+				}
+			}else{
+				alert('cannot delete, has children: ' + this.children.map(function(e){return e.model.id;}).join(', '));
+				return false;
+			}
+		};
+	this.addStep = function(){
+		var id = uuid4.generate();
+		$scope.data.models[id] = {id: id, p: this.id};	
+	};
+		
     }
   }]);

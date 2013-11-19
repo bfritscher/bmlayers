@@ -268,22 +268,24 @@ tr.rule-cat > td {
   display: none;
 }
 
-.edit .control{
+.edit .control {
   display: block;
 }
 
-input.model-name{
+input.model-name {
   font-size: 120px;
   line-height: 120px;
   height: 200px;
 }
 
-input.model-dname{
+input.model-dname {
   font-size: 90px;
   line-height: 90px;
   height: 150px;
 }
-input.model-name, input.model-dname {
+
+input.model-name,
+input.model-dname {
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -292,13 +294,16 @@ input.model-name, input.model-dname {
   width: 100%;
   display: block;
   border-radius: 0;
+  -webkit-box-shadow: none;
   box-shadow: none;
   margin: 0;
   padding: 0;
 }
 
-input.model-name:focus, input.model-dname:focus {
+input.model-name:focus,
+input.model-dname:focus {
   outline-offset: 0;
+  -webkit-box-shadow: none;
   box-shadow: none;
 }
 
@@ -354,20 +359,20 @@ g.zone text {
   font-weight: bold;
 }
 
-.link path {
+.link {
   stroke: red;
   stroke-width: 3px;
   fill: none;
 }
 
-.link.old path {
+.link.old {
   stroke: blue;
 }
 
-#rightmenu{
+#rightmenu {
   background-color: red;
   width: 250px;
-  height: 600px;
+  height: 100%;
   position: absolute;
   right: 0;
   top: 0;

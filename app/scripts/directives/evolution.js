@@ -18,13 +18,15 @@ angular.module('bmlayersApp')
       
       d3.select(elem[0]).append("marker")
 		.attr("id", "arrowhead")
-		.attr("refY", 2)
-		.attr("markerWidth", 6)
-		.attr("markerHeight", 4)
+		.attr("refY", 6)
+		.attr("refX", -4)
+		.attr("markerWidth", 18)
+		.attr("markerHeight", 12)
 		.attr("orient", "auto")
+		.attr("markerUnits", "userSpaceOnUse")
 		.append("path")
 			.attr('class', 'marker')
-			.attr("d", "M 0,0 V 4 L6,2 Z");
+			.attr("d", "M 0,0 V 12 L18,6 Z");
       
       var  svg = d3.select(elem[0]).append('g');  
 	  
@@ -71,24 +73,16 @@ angular.module('bmlayersApp')
         
         var modelMenu = model.select('g.model-menu');
         
-        makeButton(modelMenuEnter, 'C', 0, 200)
-        .on('click', function(d){
-          //add new model to clicked row
-          scope.$apply(function(){
-            scope.data.models.push({id: uuid4.generate(), p: d.value.id});
-          })
-        });
-        
-        makeButton(modelMenuEnter, 'D', 40, 200)
-        .on('click', function(d){
-          //delete a model
-          scope.$apply(function(){
-            //TODO: handle migration cases
-            scope.data.models.splice(scope.data.models.indexOf(d.value), 1);
-          })
-        });
-		
-		
+		makeButton(modelMenuEnter, 'O', 1280, 380)
+		.on('click', function(d){
+			scope.$apply(function(){
+				if(scope.editModel && scope.editModel.id  === d.value.id){
+					scope.editModel = undefined;
+				}else{
+					scope.editModel = d.value;
+				}
+			});
+		});
 		
 		modelMenuEnter
 		.append('foreignObject')
@@ -96,7 +90,7 @@ angular.module('bmlayersApp')
 		  .attr('height', 200)
 		  .append('xhtml:body')
 		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-		  .html(function(d, i){ return '<input class="model-name" type="text" ng-model="data.models['+i+'].name" placeholder="Iteration Title"/>';})
+		  .html(function(d){ return '<input class="model-name" type="text" ng-model="data.models[\''+ d.key + '\'].name" placeholder="Iteration Title"/>';})
 		  .each(function(d){
 			 $compile(this)(scope);
 		  });
@@ -108,7 +102,7 @@ angular.module('bmlayersApp')
 		  .attr('x', 0)
 		  .append('xhtml:body')
 		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-		  .html(function(d, i){ return '<input class="model-dname" type="text" ng-style="{color: models[\''+ d.key + '\'].getColor()}" ng-model="data.models['+i+'].when" placeholder="when"/>';})
+		  .html(function(d){ return '<input class="model-dname" type="text" ng-style="{color: models[\''+ d.key + '\'].getColor()}" ng-model="data.models[\''+ d.key + '\'].when" placeholder="when"/>';})
 		  .each(function(d){
 			 $compile(this)(scope);
 		  });
@@ -132,9 +126,23 @@ angular.module('bmlayersApp')
 			.x(function(d){return d.x;})
 			.y(function(d){return d.y;});
 		
-		link.select('path').attr('d', function(d){
-			return line(d.value.points);
-		});
+		
+		function updateLink(link){
+          link.select('path').attr('d', function(d){
+              return line(d.value.points);
+          })
+          .attr('stroke', function(d){
+              return d.value.color;
+          })
+          .attr('stroke-width', function(d){
+              return d.value.width;
+          })
+          .attr('stroke-dasharray', function(d){
+              return d.value.dash;
+          });
+          
+        }
+		updateLink(link);
 		
 		link.exit().remove();
           
@@ -270,9 +278,7 @@ angular.module('bmlayersApp')
 		circleControl.attr("cx", function(d){return d.x;})
 		.attr("cy", function(d){return d.y;});
 		
-		link.select('path').attr('d', function(d){
-			return line(d.value.points);
-		});
+		updateLink(link);
 		
 		link.exit().remove();
           
@@ -317,7 +323,7 @@ angular.module('bmlayersApp')
           .attr('class', 'dname')
 		  .append('xhtml:body')
 		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-		  .html(function(d, i){ return '<input class="model-dname" type="text" ng-style="{color: models[\''+ d.key + '\'].getColor()}" ng-model="data.models['+i+'].dname" placeholder="Evolution Title"/>';})
+		  .html(function(d, i){ return '<input class="model-dname" type="text" ng-style="{color: models[\''+ d.key + '\'].getColor()}" ng-model="data.models[\''+ d.key + '\'].dname" placeholder="Evolution Title"/>';})
 		  .each(function(d){
 			 $compile(this)(scope);
 		  });
@@ -364,10 +370,10 @@ angular.module('bmlayersApp')
 		linkEnter = link.enter().append('g')
 		.attr('class', 'link')
 		linkEnter.append('path')
-		.attr("marker-end", "url(#arrowhead)")
-        link.select('path').attr('d', function(d){
-			return line(d.value.points);
-		});
+		.attr("marker-end", "url(#arrowhead)");
+        
+        updateLink(link);
+        
 		link.exit().remove();
         
         //model elements behaviors
@@ -408,6 +414,7 @@ angular.module('bmlayersApp')
 			  if(zone.constructor.name === 'Element'){
 				  scope.$apply(function(){
 					 //create LINK
+					 //TODO check same MODEL
 					 var id = uuid4.generate();
 					 scope.data.links[id] = {
 						 from: d.value.id,
