@@ -180,6 +180,8 @@ angular.module('bmlayersApp')
     //Object wrapper and defaults
     var mWidth = 1280;
     var mHeight = 900;
+	var eWidth = mWidth / 5 * 0.39;
+	var eHeight = eWidth / 9 * 8;
     var rowSpacing = 700;
 	var colSpacing = 300;
     
@@ -262,8 +264,8 @@ angular.module('bmlayersApp')
 		this.children = [];
 		this.links = [];
 		this.zoneObj;
-		this.width = 100;
-		this.height = 40;
+		this.width = eWidth;
+		this.height = eHeight;
 		this.handleDelete = function(){
 			if(this.children.length === 0){
 				for(var i = 0; i < this.links.length; i++){					
@@ -343,8 +345,16 @@ angular.module('bmlayersApp')
 			links = this.parent.allLinks();
 		}
 		for(var id in this.links){
-			var link = this.links[id];
-			links[id] = link;
+			links[id] = this.links[id];
+		}
+		for(var id in this.elements){
+			var element = this.elements[id];
+			//only add link if connected elements not deleted in this model
+			if('D' === element.type){
+				for(var lid=0; lid < element.parent.links.length; lid++){
+					delete links[element.parent.links[lid].id];
+				}
+			}
 		}
 		return links;
 	  };

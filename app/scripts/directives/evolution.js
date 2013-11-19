@@ -73,6 +73,25 @@ angular.module('bmlayersApp')
         
         var modelMenu = model.select('g.model-menu');
         
+        function makeButton(selection, label, x, y){
+          x = x || 0;
+          y = y || 0;
+          var button = selection.append('g')
+          .attr('transform', 'translate(' + x + ',' + y + ')')
+		  .attr('class', 'button');
+          button.append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', 30)
+          .attr('height', 30); 
+          
+          button.append('text')
+          .attr('x', 10)
+          .attr('y', 20)
+          .text(label);
+          
+          return button;
+        }
 		makeButton(modelMenuEnter, 'O', 1280, 380)
 		.on('click', function(d){
 			scope.$apply(function(){
@@ -282,26 +301,6 @@ angular.module('bmlayersApp')
 		
 		link.exit().remove();
           
-        function makeButton(selection, label, x, y){
-          x = x || 0;
-          y = y || 0;
-          var button = selection.append('g')
-          .attr('transform', 'translate(' + x + ',' + y + ')')
-		  .attr('class', 'button');
-          button.append('rect')
-          .attr('x', 0)
-          .attr('y', 0)
-          .attr('width', 30)
-          .attr('height', 30); 
-          
-          button.append('text')
-          .attr('x', 10)
-          .attr('y', 20)
-          .text(label);
-          
-          return button;
-        }
-          
         model.exit().remove();
           
         //model update
@@ -455,6 +454,57 @@ angular.module('bmlayersApp')
         });
         
         function elementOfZone(zone){
+          //OLD elements of previous model
+		  
+          element = model.select('g.' + zone.name).selectAll('g.old').data(function(m){
+            return m.value.parent ? d3.map(m.value.parent.all()).entries().filter(function(d){return d.value.zone === zone.name;}) : [];
+          }, function(d){ return d.key;});
+          
+          elementEnter = element.enter()
+            .append('g')
+            .attr('class', 'old')
+			.on('click', function(d){
+				//only accept click on old elements which have no children in the currentModel.
+				var currentModel = d3.select(this.parentElement).data()[0].value;
+				if(d.value.children.filter(function(e){ return currentModel.id === e.model.id; }).length === 0) {
+					var type
+					do {
+						type=prompt('Change (C) or Delte (D)?', 'C');
+					}
+					while(!(type===null || type === 'C' || type === 'D'));
+					if(type){
+					 scope.$apply(function(){
+						var id = uuid4.generate();
+						scope.data.elements[id] = {
+						  id: id,
+						  m: currentModel.id,
+						  type: type,
+						  p: d.value.id,
+						  x: d.value.x,
+						  y: d.value.y,
+						  zone: d.value.zone
+						};
+					  });
+					}
+				}
+			});
+          elementEnter.append('rect')
+            .attr('x',0)
+            .attr('y',0)
+            .attr('width', function(d){return d.value.width;})
+            .attr('height', function(d){return d.value.height;})
+            
+          elementEnter.append('text')
+            .attr('x', 10)
+            .attr('y', 20);
+          
+          
+          element.select('text').text(function(e){return e.key;});
+          element.attr('transform', function(d){ return 'translate(' + (d.value.x || 0) + ',' + (d.value.y || 0) + ')';});
+          
+          element.exit().remove();
+          
+          // NEW ELEMENTS
           
           element = model.select('g.' + zone.name).selectAll('g.new').data(function(m){
             return d3.map(m.value.elements).entries().filter(function(d){return d.value.zone === zone.name;});
@@ -468,13 +518,7 @@ angular.module('bmlayersApp')
             .attr('y',0)
             .attr('width', function(d){return d.value.width;})
             .attr('height', function(d){return d.value.height;})
-            
-          /*
-          elementEnter.append('text')
-            .attr('x', 10)
-            .attr('y', 20);
-          */
-		  
+
 		  elementEnter
 		  .append('foreignObject')
 		  .attr('width', function(d){return d.value.width;})
@@ -483,25 +527,14 @@ angular.module('bmlayersApp')
 		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
 		  .append('div');
             
-          makeButton(elementEnter, 'D', 0, 0)
-          .attr('style', 'pointer-events:all;')
-          .on('mousedown', function(d){
-            //DELETE A ELEMENT
-            d3.event.stopPropagation(); 
-            scope.$apply(function(){
-				d.value.handleDelete();  
-            });
-          });
             
-          //element.select('text').text(function(e){return e.key;})
 		  element.select('div').text(function(e){return e.key;});
+          
           
           //Only add should be draggable (delete and change are relative to their previous)
           elementEnter.filter(function(d){
             return 'A' === d.value.type;
           }).call(drag);
-          
-          
           
           //if type D or C follow previous
           element.filter(function(d){
@@ -515,29 +548,6 @@ angular.module('bmlayersApp')
           });
           element.exit().remove();
   
-  
-          //elements of previous model
-          element = model.select('g.' + zone.name).selectAll('g.old').data(function(m){
-            return m.value.parent ? d3.map(m.value.parent.all()).entries().filter(function(d){return d.value.zone === zone.name;}) : [];
-          }, function(d){ return d.key;});
-          
-          elementEnter = element.enter()
-            .append('g')
-            .attr('class', 'old');
-          elementEnter.append('rect')
-            .attr('x',0)
-            .attr('y',0)
-            .attr('width', function(d){return d.value.width;})
-            .attr('height', function(d){return d.value.height;})
-            
-          elementEnter.append('text')
-            .attr('x', 10)
-            .attr('y', 20);
-          element.select('text').text(function(e){return e.key;});
-          
-          element.attr('transform', function(d){ return 'translate(' + (d.value.x || 0) + ',' + (d.value.y || 0) + ')';});
-          
-          element.exit().remove();
         }
       }
       draw();

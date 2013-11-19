@@ -1,5 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" evolution></svg>
-<div id="rightmenu" ng-show="editLink || editModel">
+<div id="rightmenu" ng-show="editLink || editModel || editElement">
+    <div ng-show="editElement">
+        <h2>Element</h2>
+        <p>name: <input type="text" ng-model="data.links[editLink.id].color" /></p>
+        <p>color: ? tags? <input type="text" ng-model="data.links[editLink.id].color" /></p>
+        <p><button ng-click="editElement.handleDelete()" class="btn btn-danger">delete Element</button></p>
+    </div>
     <div ng-show="editLink">
         <h2>Mechanic</h2>
         <div ng-click="editLink=undefined">X</div>
