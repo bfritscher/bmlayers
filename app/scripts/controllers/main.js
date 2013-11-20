@@ -269,18 +269,12 @@ angular.module('bmlayersApp')
 	};
     
     var elements = localStorageService.get('elements');
-	if(elements != "null"){
+	if(elements !== null){
 		$scope.model.elements = elements;
 	}
 	$scope.$watch('model.elements', function(){
 		 localStorageService.add('elements', $scope.model.elements);
-	}, true);
-	
-	$scope.model.curves = localStorageService.get('curves') || [];
-	$scope.$watch('model.curves', function(){
-		 localStorageService.add('curves', $scope.model.curves);
-	}, true);
-    
+	}, true);   
     
     $scope.zoom = function(z, elements){
         if(!z.zoomed && ((z.value != 'cs' && z.value != 'pn' && z.value != 'vp' && elements.length > 4) || elements.length > 7)){

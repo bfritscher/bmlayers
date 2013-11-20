@@ -8,7 +8,7 @@
     "jquery": "latest",
     "jquery-ui": "latest",
     "bootstrap-css": "~2.3.2",
-    "font-awesome": "latest",
+    "font-awesome": "~3.2.1",
     "angular": "~1.2.1",
     "angular-resource": "~1.2.1",
     "angular-cookies": "~1.2.1",
