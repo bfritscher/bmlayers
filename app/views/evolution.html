@@ -1,27 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" evolution></svg>
 <div id="rightmenu" ng-show="editLink || editModel || editElement">
-    <div ng-show="editElement">
+    <div ng-show="editElement" class="editElement">
+        <button ng-click="editElement=undefined" class="close">&times;</button>
         <h2>Element</h2>
-        <div ng-click="editElement=undefined">X</div>
         <p>id: {{editElement.id}}</p>
         <p>type: {{editElement.type}}</p>
-        <p>name: <input type="text" ng-model="data.links[editLink.id].color" /></p>
-        <p>color: ? tags? <input type="text" ng-model="data.links[editLink.id].color" /></p>
+        <p>name: <input type="text" ng-model="data.elements[editElement.id].name" /></p>
+        <div class="tags">
+	       <div ng-repeat="t in data.tags" class="tag" ng-class="{hidden: data.elements[editElement.id].tags.indexOf(t.id) < 0}"
+            style="background-color:{{t.color}};" title="{{t.name}}" ng-click="editElement.toggleTag(t, $event)"></div>
+		</div>
+        
         <p><button ng-click="editElement.handleDelete()" class="btn btn-danger">delete element</button></p>
     </div>
     <div ng-show="editLink">
+        <button ng-click="editLink=undefined" class="close">&times;</button>
         <h2>Mechanic</h2>
-        <div ng-click="editLink=undefined">X</div>
         <p>from: {{elements[editLink.from].id}}</p>
         <p>to: {{elements[editLink.to].id}}</p>
-        <p>color: <input type="text" ng-model="data.links[editLink.id].color" /></p>
+        <p>color: <input type="text" ng-model="data.links[editLink.id].color" />
+        </p>
+        <div class="tags">
+	       <div ng-repeat="t in data.tags" class="tag" ng-class="{hidden: data.links[editLink.id].color != t.color}"
+            style="background-color:{{t.color}};" ng-click="data.links[editLink.id].color=t.color"></div>
+		</div>
         <p>width: s m l <input type="text" ng-model="data.links[editLink.id].width" /></p>
         <p>style: line dash <input type="text" ng-model="data.links[editLink.id].dash" /></p>
         <p><button ng-click="deleteLink()" class="btn btn-danger">delete link</button></p>
     </div>
     <div ng-show="editModel">
+        <button ng-click="editModel=undefined" class="close">&times;</button>
         <h2>Business Model</h2>
-        <div ng-click="editModel=undefined">X</div>
         <p>name: <input type="text" ng-model="data.models[editModel.id].name" /></p>
         <p>dname: <input type="text" ng-model="data.models[editModel.id].dname" ng-disabled="editModel.column == 0"/></p>
         <p>when: <input type="text" ng-model="data.models[editModel.id].when" /></p>

@@ -1,15 +1,16 @@
 'use strict';
 
 angular.module('bmlayersApp')
-  .controller('EvolutionCtrl', ['$scope','angularFire', 'uuid4', '$routeParams',
-  function ($scope, angularFire, uuid4, $routeParams) {
+  .controller('EvolutionCtrl', ['$scope','angularFire', 'uuid4', '$routeParams', 'layers',
+  function ($scope, angularFire, uuid4, $routeParams, layers) {
     
     var ref = new Firebase('https://bm.firebaseio.com/projects/' + $routeParams.projectid);
     angularFire(ref, $scope, 'data');
     $scope.data = {
 		elements:{},
 		models:{},
-		links:{}
+		links:{},
+		tags: layers.tags.tags
 	};
     
     /*
@@ -40,13 +41,17 @@ angular.module('bmlayersApp')
 			delete $scope.data.links[$scope.editLink.id];
 		}
 	};
+	
+	$scope.elementStyle = function (element){
+		return layers.elementStyle(element, $scope.data.tags);
+	};
 
     //transform DATA to linked objects
 	//TODO data changes should only update local models...
+
     $scope.$watch('data', function(){
 	
       if($scope.data && $scope.data.models){
-		  console.log('data');
         var models = {};
 		var elements = {};
 		
@@ -77,6 +82,9 @@ angular.module('bmlayersApp')
 			  //TODO support no zone?
 			  if(!e.zone){
 				e.zone = 'value_proposition';
+			  }
+			  if(!e.tags){
+				e.tags = [];  
 			  }
 			  if(!models[e.m]){
 				  //TODO FIX recover lost elements by adding it to model 0;
@@ -176,7 +184,7 @@ angular.module('bmlayersApp')
         return model.children.length === 0 ? row + 1 : row;
       }
       
-    }, true);
+    });
     
     
     //Object wrapper and defaults
@@ -260,6 +268,7 @@ angular.module('bmlayersApp')
 		this.y = obj.y;
 		this.p = obj.p;
 		this.zone = obj.zone;
+		this.tags = obj.tags;
 		
 		this.model;
 		this.parent;
@@ -290,6 +299,22 @@ angular.module('bmlayersApp')
 				links[id] = this.links[id];
 			}
 			return links;
+		};
+		this.toggleTag = function(tag, event){
+			//FIX reference
+			var tags = $scope.data.elements[this.id].tags;
+			var idx = tags.indexOf(tag.id);
+			//ctrl force one color
+			if(event.ctrlKey){
+				tags.splice(0, tags.length);
+				tags.push(tag.id);
+			}else{
+				if(idx >=0){
+					 tags.splice(idx, 1);
+				}else{
+					tags.push(tag.id);
+				}	
+			}
 		};
 	}
     

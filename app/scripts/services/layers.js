@@ -25,12 +25,12 @@ angular.module('bmlayersApp')
             tags:[
                 {
                     id: 'c0',
-                    name: 's3',
+                    name: '',
                     color: colors[0]
                 },
                 {
                     id: 'c1',
-                    name: 'normal',
+                    name: '',
                     color: colors[1]
                 },
                 {
@@ -50,7 +50,7 @@ angular.module('bmlayersApp')
                 },
                 {
                     id: 'c5',
-                    name: 'dummy',
+                    name: '',
                     color: colors[5]
                 }
             ]	
@@ -132,7 +132,28 @@ angular.module('bmlayersApp')
             id:'errors',
             type: '???',
             visible: true
-        }
+        },
+		elementStyle: function(element, tags){
+			function tagById(id){
+				var tag;
+				for(var i=0; i < tags.length; i++){
+					tag = tags[i];
+					if(tag.id === id) return tag;
+				}
+			}
+			var styles = 'background: linear-gradient(135deg',
+			increment = element.tags.length -1 > 0 ? 100 / (element.tags.length -1) : 0;
+			element.tags.forEach(function(id, index){
+				var offset = index * increment;
+				styles +=',' + hexToRgba(tagById(id).color, 0.5) + ' ' + offset + '%';
+			});
+			if(element.tags.length === 1){
+				styles += ',' + hexToRgba(tagById(element.tags[0]).color, 0.5) + ' 100%';
+			}
+			styles +=');';
+			
+			return styles;
+		}
 		//scale?
 		//n attributes of defines names
 		//n attributes unknown name?

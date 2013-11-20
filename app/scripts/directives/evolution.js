@@ -59,7 +59,7 @@ angular.module('bmlayersApp')
       */
          
       function draw(){
-		  console.log('draw');
+		console.log('draw');
         var svg = d3.select(elem[0]).select('g');  
                 
         //Model
@@ -196,6 +196,7 @@ angular.module('bmlayersApp')
                 scope.data.elements[id] = {
                   id: id,
                   m: model.value.id,
+				  name: prompt('name?'),
                   type: 'A',
                   zone: zone.name,
                   x: pos[0],
@@ -307,7 +308,7 @@ angular.module('bmlayersApp')
         model.attr('transform', function(m){return 'translate(' + m.value.x() + ',' + m.value.y() + ')';});
         
         //modelDiff boxes
-        var modelDiff = svg.selectAll('g.diff').data(d3.map(scope.models).entries().slice(1));
+        var modelDiff = svg.selectAll('g.diff').data(d3.map(scope.models).entries().filter(function(e){return e.value.parent;}));
         var modelDiffEnter = modelDiff.enter().append('g')
           .attr('class', 'diff');
           
@@ -402,6 +403,7 @@ angular.module('bmlayersApp')
 			  scope.$apply(function(){
 				scope.data.elements[d.key].x = d3.event.x;
 				scope.data.elements[d.key].y = d3.event.y;
+				draw();
 			  });
 			}
 			if(d.value.type === 'C'){
@@ -499,10 +501,14 @@ angular.module('bmlayersApp')
 					}
 					while(!(type===null || type === 'C' || type === 'D'));
 					if(type){
+						if(type==='C'){
+							var name = prompt('new name?');
+						}
 					 scope.$apply(function(){
 						var id = uuid4.generate();
 						scope.data.elements[id] = {
 						  id: id,
+						  name: name,
 						  m: currentModel.id,
 						  type: type,
 						  p: d.value.id,
@@ -539,22 +545,29 @@ angular.module('bmlayersApp')
           elementEnter = element.enter().append('g')
             .attr('class', 'new');
           
+
           elementEnter.append('rect')
             .attr('x',0)
             .attr('y',0)
             .attr('width', function(d){return d.value.width;})
             .attr('height', function(d){return d.value.height;})
 
+
 		  elementEnter
 		  .append('foreignObject')
+		  .attr('class', 'svgelement')
 		  .attr('width', function(d){return d.value.width;})
 		  .attr('height', function(d){return d.value.height;})
 		  .append('xhtml:body')
 		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-		  .append('div')            
-            
-		  element.select('div').text(function(e){return e.key;});
-          
+		  .attr('style', function(d){return 'width:' + d.value.width + 'px;height:' + d.value.height + 'px' ;})
+		  .html(function(d){
+			  return '<div class="svgelement" style="{{elementStyle(data.elements[\'' + d.key + '\'])}}">'
+			  + '<span>{{data.elements[\'' + d.key + '\'].name}}</span></div>';
+		  })
+		  .each(function(d){
+			 $compile(this)(scope);
+		  });
           
           //Only add should be draggable (delete and change are relative to their previous)
           
