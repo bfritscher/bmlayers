@@ -28,7 +28,7 @@ var l_g1 = {
 
 }
 
-var colors = ['#34b27d','#dbdb57', '#e09952', '#cb4d4d', '#9933cc', '#4d77cb'];
+var colors = ['#34b27d','#F1F157', '#e09952', '#cb4d4d', '#9933cc', '#4d77cb'];
 
 var bmc = {
     width: 100,

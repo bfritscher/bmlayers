@@ -10,12 +10,6 @@ angular.module('bmlayersApp')
 		  var id = uuid4.generate();
 		  $scope.data.models[id] = {id: id};
 		}
-		if(!$scope.data.elements){
-			$scope.data.elements = {};
-		}
-		if(!$scope.data.links){
-			$scope.data.links = {};
-		}
 	});
     $scope.data = {
 		elements:{},
@@ -23,6 +17,8 @@ angular.module('bmlayersApp')
 		links:{},
 		tags: layers.tags.tags
 	};
+	
+    $scope.showDiff = true;
     
     /*
     $scope.data = {
@@ -75,7 +71,12 @@ angular.module('bmlayersApp')
 	  if($scope.data && $scope.data.models){
 		console.log('data');
 		
-
+		if(!$scope.data.elements){
+			$scope.data.elements = {};
+		}
+		if(!$scope.data.links){
+			$scope.data.links = {};
+		}
 		
 		//element data integrity
 		for(var id in $scope.data.elements){
@@ -374,6 +375,21 @@ angular.module('bmlayersApp')
 				}	
 			}
 		};
+		this.getColor = function(){
+			try{
+				return tagById(this.data.tags[0]).color;
+			}catch(e){
+				return '';
+			}
+		};
+	}
+    
+    function tagById(id){
+		var tag;
+		for(var i=0; i < $scope.data.tags.length; i++){
+			tag = $scope.data.tags[i];
+			if(tag.id === id) return tag;
+		}
 	}
     
     function Model(obj){
@@ -392,7 +408,7 @@ angular.module('bmlayersApp')
       this.elements = {};
 	  this.links = {};
       this.x = function(){
-        return this.column * (2 * mWidth + colSpacing);
+        return this.column * (($scope.showDiff ? 2 : 1) * mWidth + colSpacing);
       };
       this.y = function(){
         return this.row * (mHeight + rowSpacing);
@@ -482,7 +498,7 @@ angular.module('bmlayersApp')
 		};
 	this.addStep = function(){
 		var id = uuid4.generate();
-		$scope.data.models[id] = {id: id, p: this.id};	
+		$scope.data.models[id] = {id: id, p: this.id};
 	};
 	
 	this.importJSON = function(){

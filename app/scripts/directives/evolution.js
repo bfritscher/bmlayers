@@ -34,7 +34,8 @@ angular.module('bmlayersApp')
         svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
       }
       
-      scope.$watch('data', function(){draw();});
+      scope.$watch('data', function(){draw();}, true);
+	  scope.$watch('showDiff', function(){draw();});
       
       /* transition via zoom
       var width = 1280, height = 800;
@@ -311,68 +312,72 @@ angular.module('bmlayersApp')
         model.attr('transform', function(m){return 'translate(' + m.value.x() + ',' + m.value.y() + ')';});
         
         //modelDiff boxes
-        var modelDiff = svg.selectAll('g.diff').data(d3.map(scope.models).entries().filter(function(e){return e.value.parent;}));
-        var modelDiffEnter = modelDiff.enter().append('g')
-          .attr('class', 'diff');
-          
-        modelDiffEnter.append('g')
-        .attr('class', 'model-menu')
-        .attr('transform', 'translate(0,-200)')
-		.append('foreignObject')
-		  .attr('x', 0)
-          .attr('y', 0)
-		  .attr('width', function(d){return d.value.width;})
-		  .attr('height', 150)
-          .attr('class', 'dname')
-		  .append('xhtml:body')
-		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-		  .html(function(d, i){ return '<input class="model-dname" type="text" ng-style="{color: models[\''+ d.key + '\'].getColor()}" ng-model="data.models[\''+ d.key + '\'].dname" placeholder="Evolution Title"/>';})
-		  .each(function(d){
-			 $compile(this)(scope);
-		  });
-        
-		  
-		
-          
-        modelDiff.attr('transform', function(m){return 'translate(' + (m.value.x()- m.value.width - m.value.colSpacing/2) + ',' + m.value.y() + ')';});
-        
-        modelDiff.exit().remove();
-        
-        //diff elements
-        var element = modelDiff.selectAll('g.new').data(function(m){
-          return d3.map(m.value.elements).entries();
-        }, function(d){ return d.key;});
-        
-        var elementEnter = element.enter().append('g')
-          .attr('class', 'new');
-        
-        createElementHtmlBody(elementEnter);
-        
-        
-        element.attr('transform', function(d){
-          var zone = d.value.zoneObj;
-          var x = zone && zone.x || 0;
-          var y = zone && zone.y || 0;
-          x = x + d.value.data.x || x;
-          y = y + d.value.data.y || y;
-          return 'translate(' + x + ',' + y + ')';
-        });                
-                
-        element.exit().remove();
-        
-        //model diff links
-		modelLinksEnter = modelDiffEnter.append('g')
-		.attr('class', 'links')
-        link = modelDiff.select('g.links').selectAll('g.link').data(function(d){return  d3.map(d.value.links).entries();}, function(d){ return d.key;})
-		linkEnter = link.enter().append('g')
-		.attr('class', 'link')
-		linkEnter.append('path')
-		.attr("marker-end", "url(#arrowhead)");
-        
-        updateLink(link);
-        
-		link.exit().remove();
-        
+		if(scope.showDiff){
+			var modelDiff = svg.selectAll('g.diff').data(d3.map(scope.models).entries().filter(function(e){return e.value.parent;}));
+			var modelDiffEnter = modelDiff.enter().append('g')
+			  .attr('class', 'diff');
+			  
+			modelDiffEnter.append('g')
+			.attr('class', 'model-menu')
+			.attr('transform', 'translate(0,-200)')
+			.append('foreignObject')
+			  .attr('x', 0)
+			  .attr('y', 0)
+			  .attr('width', function(d){return d.value.width;})
+			  .attr('height', 150)
+			  .attr('class', 'dname')
+			  .append('xhtml:body')
+			  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+			  .html(function(d, i){ return '<input class="model-dname" type="text" ng-style="{color: models[\''+ d.key + '\'].getColor()}" ng-model="data.models[\''+ d.key + '\'].dname" placeholder="Evolution Title"/>';})
+			  .each(function(d){
+				 $compile(this)(scope);
+			  });
+			
+			  
+			
+			  
+			modelDiff.attr('transform', function(m){return 'translate(' + (m.value.x()- m.value.width - m.value.colSpacing/2) + ',' + m.value.y() + ')';});
+			
+			modelDiff.exit().remove();
+			
+			//diff elements
+			var element = modelDiff.selectAll('g.new').data(function(m){
+			  return d3.map(m.value.elements).entries();
+			}, function(d){ return d.key;});
+			
+			var elementEnter = element.enter().append('g')
+			  .attr('class', 'new');
+			
+			createElementHtmlBody(elementEnter);
+			
+			
+			element.attr('transform', function(d){
+			  var zone = d.value.zoneObj;
+			  var x = zone && zone.x || 0;
+			  var y = zone && zone.y || 0;
+			  x = x + d.value.data.x || x;
+			  y = y + d.value.data.y || y;
+			  return 'translate(' + x + ',' + y + ')';
+			});                
+					
+			element.exit().remove();
+			
+			//model diff links
+			modelLinksEnter = modelDiffEnter.append('g')
+			.attr('class', 'links')
+			link = modelDiff.select('g.links').selectAll('g.link').data(function(d){return  d3.map(d.value.links).entries();}, function(d){ return d.key;})
+			linkEnter = link.enter().append('g')
+			.attr('class', 'link')
+			linkEnter.append('path')
+			.attr("marker-end", "url(#arrowhead)");
+			
+			updateLink(link);
+			
+			link.exit().remove();
+		}//end show diff
+		else{
+			svg.selectAll('g.diff').remove();
+		}
         //model elements behaviors
         
         var drag = d3.behavior.drag()
@@ -438,7 +443,8 @@ angular.module('bmlayersApp')
 							 from: d.value.id,
 							 to: zone.id,
 							 m: d.value.data.m,
-							 id: id
+							 id: id,
+							 color: d.value.getColor()
 						 };
 						 scope.data.elements[d.key].x = d.__origin__[0];
 						 scope.data.elements[d.key].y = d.__origin__[1];
@@ -534,7 +540,7 @@ angular.module('bmlayersApp')
 					while(!(type===null || type === 'C' || type === 'D'));
 					if(type){
 						if(type==='C'){
-							var name = prompt('new name?');
+							var name = prompt('new name?', d.value.data.name);
 						}
 					 scope.$apply(function(){
 						var id = uuid4.generate();
@@ -546,7 +552,8 @@ angular.module('bmlayersApp')
 						  p: d.value.id,
 						  x: d.value.data.x,
 						  y: d.value.data.y,
-						  zone: d.value.data.zone
+						  zone: d.value.data.zone,
+						  tags: angular.copy(d.value.data.tags)
 						};
 					  });
 					}

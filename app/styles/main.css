@@ -250,7 +250,7 @@ tr.rule-cat > td {
 }
 
 .marker {
-  fill: rgb(255, 255, 153);
+  fill: #333;
 }
 
 .control {
@@ -321,7 +321,6 @@ g.zones g.diff rect {
   fill: none;
 }
 
-
 .old {
   /* background-color: blue; */
   /* color: red; */
@@ -349,7 +348,7 @@ path.delete {
 
 .link {
   stroke: rgb(255, 255, 153);
-  stroke-width: 6px;
+  stroke-width: 10px;
   fill: none;
 }
 
@@ -465,6 +464,8 @@ path.delete {
   vertical-align: middle;
   word-wrap: break-word;
   font-weight: 700;
+  font-family: 'Patrick Hand', cursive;
+  font-size: 20px;
 }
 
 .no_selection,
