@@ -1,0 +1,15 @@
+<div class="projects-frame">
+    <h1>Projects</h1>
+    <p ng-show="getProjects().length == 0">Loading...</p>
+    <ul class="nav nav-list bs-docs-sidenav">
+        <li ng-repeat="project in getProjects()">
+            <a href="#/evolution/{{project}}"><i class="icon-chevron-right"></i>{{project}}</a>
+        </li>
+        <li style="text-align:center">
+        <div class="input-append" style="margin-top:10px">
+            <input type="text" ng-model="newProjectId" />
+            <button class="btn" type="button" ng-click="newProject()">Create</button>
+        </div>    
+        </li>
+    </ul>
+</div>

@@ -4,7 +4,7 @@ angular.module('bmlayersApp',
   ['ui.bootstrap', 'LocalStorageModule', 'ngRoute', 'firebase', 'uuid4'])
   .config(function ($routeProvider) {
     $routeProvider
-      .when('/', {
+      .when('/main', {
         templateUrl: 'views/main.html',
         controller: 'MainCtrl'
       })
@@ -13,10 +13,14 @@ angular.module('bmlayersApp',
         controller: 'MainCtrl'
       })
       .when('/evolution', {
+        templateUrl: 'views/project.html',
+        controller: 'ProjectCtrl'
+      })
+      .when('/evolution/:projectid', {
         templateUrl: 'views/evolution.html',
         controller: 'EvolutionCtrl'
       })
       .otherwise({
-        redirectTo: '/'
+        redirectTo: '/evolution'
       });
   });

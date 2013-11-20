@@ -1,11 +1,16 @@
 'use strict';
 
 angular.module('bmlayersApp')
-  .controller('EvolutionCtrl', ['$scope','angularFire', 'uuid4',
-  function ($scope, angularFire, uuid4) {
+  .controller('EvolutionCtrl', ['$scope','angularFire', 'uuid4', '$routeParams',
+  function ($scope, angularFire, uuid4, $routeParams) {
     
-    var ref = new Firebase('https://bm.firebaseio.com/bm1');
+    var ref = new Firebase('https://bm.firebaseio.com/projects/' + $routeParams.projectid);
     angularFire(ref, $scope, 'data');
+    $scope.data = {
+		elements:{},
+		models:{},
+		links:{}
+	};
     
     /*
     $scope.data = {
@@ -44,18 +49,10 @@ angular.module('bmlayersApp')
 		  console.log('data');
         var models = {};
 		var elements = {};
-		//TODO broken be sure to have necessary structure
-		if(!$scope.data.models){
-			var obj = {};
+		
+		if(Object.keys($scope.data.models).length === 0){
 			var id = uuid4.generate();
-			obj[id] = {id: id};
-			$scope.data.models = obj;
-		}
-		if(!$scope.data.elements){
-			$scope.data.elements = {};
-		}
-		if(!$scope.data.links){
-			$scope.data.links = {};
+			$scope.data.models[id] = {id: id};
 		}
 		
 		//Augment model
