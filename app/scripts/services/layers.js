@@ -145,10 +145,10 @@ angular.module('bmlayersApp')
 			increment = element.tags.length -1 > 0 ? 100 / (element.tags.length -1) : 0;
 			element.tags.forEach(function(id, index){
 				var offset = index * increment;
-				styles +=',' + hexToRgba(tagById(id).color, 0.5) + ' ' + offset + '%';
+				styles +=',' + hexToRgba(tagById(id).color, 0.8) + ' ' + offset + '%';
 			});
 			if(element.tags.length === 1){
-				styles += ',' + hexToRgba(tagById(element.tags[0]).color, 0.5) + ' 100%';
+				styles += ',' + hexToRgba(tagById(element.tags[0]).color, 0.8) + ' 100%';
 			}
 			styles +=');';
 			

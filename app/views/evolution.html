@@ -43,5 +43,7 @@
         <p>fix column: <input type="text" class="span1" ng-model="data.models[editModel.id].c" /></p>
         <p><button ng-click="editModel.addStep()" class="btn btn-primary">add step</button></p>
         <p><button ng-click="editModel.handleDelete()" class="btn btn-danger">delete step</button></p>
+		<textarea ng-model="importJsonSrc" placeholder="JSON"></textarea>
+    	<button class="btn" ng-click="editModel.importJSON()">Import</button>
     </div>
 </div>

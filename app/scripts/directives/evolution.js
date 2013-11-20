@@ -14,7 +14,7 @@ angular.module('bmlayersApp')
       .attr("class", "overlay")
       .attr("width", "100%")
       .attr("height", "100%")
-      .call(zoom);
+      .call(zoom).on("dblclick.zoom", null);
       
       d3.select(elem[0]).append("marker")
 		.attr("id", "arrowhead")
@@ -318,7 +318,7 @@ angular.module('bmlayersApp')
         modelDiffEnter.append('g')
         .attr('class', 'model-menu')
         .attr('transform', 'translate(0,-200)')
-        .append('foreignObject')
+		.append('foreignObject')
 		  .attr('x', 0)
           .attr('y', 0)
 		  .attr('width', function(d){return d.value.width;})
@@ -331,6 +331,8 @@ angular.module('bmlayersApp')
 			 $compile(this)(scope);
 		  });
         
+		  
+		
           
         modelDiff.attr('transform', function(m){return 'translate(' + (m.value.x()- m.value.width - m.value.colSpacing/2) + ',' + m.value.y() + ')';});
         
@@ -344,26 +346,18 @@ angular.module('bmlayersApp')
         var elementEnter = element.enter().append('g')
           .attr('class', 'new');
         
-        elementEnter.append('rect')
-          .attr('x',0)
-          .attr('y',0)
-          .attr('width', function(d){return d.value.width;})
-          .attr('height', function(d){return d.value.height;})
-          
-        elementEnter.append('text')
-          .attr('x', 10)
-          .attr('y', 20);
+        createElementHtmlBody(elementEnter);
+        
         
         element.attr('transform', function(d){
-          var zone = d.zoneObj;
+          var zone = d.value.zoneObj;
           var x = zone && zone.x || 0;
           var y = zone && zone.y || 0;
           x = x + d.value.data.x || x;
           y = y + d.value.data.y || y;
           return 'translate(' + x + ',' + y + ')';
         });                
-        element.select('text').text(function(e){return e.key;});
-        
+                
         element.exit().remove();
         
         //model diff links
@@ -390,7 +384,6 @@ angular.module('bmlayersApp')
           .on('dragend', dragend);
         
         function dragstart(d){
-          d3.selectAll('g.zone').style('pointer-events', 'all');          
           d3.select(this).style('pointer-events', 'none'); 
 		  //make dragged top on in zone
 		  var node = d3.select(this).node();
@@ -483,6 +476,42 @@ angular.module('bmlayersApp')
 			elementOfZone(d.value.zones[key]);
           }	  
         });
+		
+		function createElementHtmlBody(element){
+			element.each(function(d){
+				var element = d3.select(this);
+				if(d.value.data.type !== 'D'){
+					element.append('rect')
+					.attr('x',0)
+					.attr('y',0)
+					.attr('width', function(d){return d.value.width;})
+					.attr('height', function(d){return d.value.height;});
+				
+				  element
+				  .append('foreignObject')
+				  .attr('class', 'svgelement')
+				  .attr('width', function(d){return d.value.width;})
+				  .attr('height', function(d){return d.value.height;})
+				  .append('xhtml:body')
+				  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+				  .attr('style', function(d){return 'width:' + d.value.width + 'px;height:' + d.value.height + 'px' ;})
+				  .html(function(d){
+					  return '<div class="svgelement" style="{{elementStyle(data.elements[\'' + d.key + '\'])}}">'
+					  + '<span>{{data.elements[\'' + d.key + '\'].name}}</span></div>';
+				  })
+				  .each(function(d){
+					 $compile(this)(scope);
+				  });
+				}else{
+					element.append('path')
+					.attr('class', 'delete')
+					.attr('d', function(d){ return line([{x:0,y:0}, {x:d.value.width,y:d.value.height}])});
+					element.append('path')
+					.attr('class', 'delete')
+					.attr('d', function(d){ return line([{x:d.value.width,y:0}, {x:0,y:d.value.height}])});
+				}
+			});
+		  }
         
         function elementOfZone(zone){
           //OLD elements of previous model
@@ -523,23 +552,16 @@ angular.module('bmlayersApp')
 					}
 				}
 			});
-          elementEnter.append('rect')
-            .attr('x',0)
-            .attr('y',0)
-            .attr('width', function(d){return d.value.width;})
-            .attr('height', function(d){return d.value.height;})
-            
-          elementEnter.append('text')
-            .attr('x', 10)
-            .attr('y', 20);
           
+          createElementHtmlBody(elementEnter);
           
-          element.select('text').text(function(e){return e.key;});
-          element.attr('transform', function(d){ return 'translate(' + (d.value.data.x || 0) + ',' + (d.value.data.y || 0) + ')';});
+          element.attr('transform', function(d){
+			  return 'translate(' + (d.value.data.x || 0) + ',' + (d.value.data.y || 0) + ')';
+			  });
           
           element.exit().remove();
           
-          // NEW ELEMENTS
+          // NEW ELEMENTS A + D
           
           element = model.select('g.' + zone.name).selectAll('g.new').data(function(m){
             return d3.map(m.value.elements).entries().filter(function(d){return d.value.data.zone === zone.name;});
@@ -547,49 +569,26 @@ angular.module('bmlayersApp')
           
           elementEnter = element.enter().append('g')
             .attr('class', 'new');
-          
+		  createElementHtmlBody(elementEnter)
 
-          elementEnter.append('rect')
-            .attr('x',0)
-            .attr('y',0)
-            .attr('width', function(d){return d.value.width;})
-            .attr('height', function(d){return d.value.height;})
-
-
-		  elementEnter
-		  .append('foreignObject')
-		  .attr('class', 'svgelement')
-		  .attr('width', function(d){return d.value.width;})
-		  .attr('height', function(d){return d.value.height;})
-		  .append('xhtml:body')
-		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-		  .attr('style', function(d){return 'width:' + d.value.width + 'px;height:' + d.value.height + 'px' ;})
-		  .html(function(d){
-			  return '<div class="svgelement" style="{{elementStyle(data.elements[\'' + d.key + '\'])}}">'
-			  + '<span>{{data.elements[\'' + d.key + '\'].name}}</span></div>';
-		  })
-		  .each(function(d){
-			 $compile(this)(scope);
-		  });
           
           //Only add should be draggable (delete and change are relative to their previous)
           
           elementEnter.call(drag)
           
-          //if type D or C follow previous except if C is dragging
+          //if type Aor C follow previous except if C is dragging
           element.attr('transform', function(d){
-			if(d.value.data.type === 'A'){
+			if(d.value.data.type === 'A' || d.value.data.type === 'D'){
 				
 				return 'translate(' + (d.value.data.x || 0) + ',' + (d.value.data.y || 0) + ')'; 
 			}else if(d.value.data.type === 'C' && d.value.__dragging__){
 				//WTF bug??? d.value.x does not return updated value..
 				return 'translate(' + (d.value.dragx || 0) + ',' + (d.value.dragy || 0) + ')'; 
 			}else{
-            	return d.value.parent ? 'translate(' + (d.value.parent.x + 10 || 10) + ',' + (d.value.parent.y + 10 || 10) + ')' : '';
+            	return d.value.parent ? 'translate(' + (d.value.parent.data.x + 10 || 10) + ',' + (d.value.parent.data.y + 10 || 10) + ')' : '';
 			}
           });
           element.exit().remove();
-  
         }
       }
   };

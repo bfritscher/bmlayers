@@ -50,6 +50,13 @@ angular.module('bmlayersApp')
 	$scope.deleteLink = function(){
 		if($scope.editLink)	{
 			delete $scope.data.links[$scope.editLink.id];
+			for(var id in $scope.models){
+				delete $scope.models[id].links[$scope.editLink.id];
+			}
+			for(var id in $scope.elements){
+				delete $scope.elements[id].links[$scope.editLink.id];
+			}
+			$scope.editLink = undefined;
 		}
 	};
 	
@@ -110,6 +117,12 @@ angular.module('bmlayersApp')
 		  	$scope.models[id].data = $scope.data.models[id]
         }
 		//link models
+		for(var id in $scope.models){	
+			var model = $scope.models[id];
+			model.children = [];
+			model.elements = {};
+			model.links = {};
+		}
 		for(var id in $scope.models){			
 		  var model = $scope.models[id];
 		  if(model.data.p){
@@ -127,6 +140,11 @@ angular.module('bmlayersApp')
 			}
 			$scope.elements[id].data = $scope.data.elements[id];
         }
+		for(var id in $scope.elements){
+			var e = $scope.elements[id];
+			e.links = {};
+			e.children = [];
+		}
 		
 		//Element obj gets linked
 		for(var id in $scope.elements){
@@ -398,23 +416,24 @@ angular.module('bmlayersApp')
         }
         for(var id in this.elements){
           var element = this.elements[id];
-          if('A' === element.type){
+          if('A' === element.data.type){
             elements[id] = element;
-          } else if('D' === element.type){
+          } else if('D' === element.data.type){
             if(element.parent){
               //delete linked element
-              element.x = element.parent.x;
-              element.y = element.parent.y;
-              element.zone = element.parent.zone;
+			  //matching done in data
+              //element.data.x = element.parent.data.x;
+              //element.data.y = element.parent.data.y;
+              //element.data.zone = element.parent.zone;
               delete elements[element.parent.id];
             }
-          } else if('C' === element.type){
+          } else if('C' === element.data.type){
             //replace linked element with current
             if(element.parent){
               delete elements[element.parent.id];
-              element.x = element.parent.x;
-              element.y = element.parent.y;
-              element.zone = element.parent.zone;
+              //element.x = element.parent.x;
+              //element.y = element.parent.y;
+              //element.zone = element.parent.zone;
               elements[id] = element;
             }
           }
@@ -465,6 +484,18 @@ angular.module('bmlayersApp')
 		var id = uuid4.generate();
 		$scope.data.models[id] = {id: id, p: this.id};	
 	};
-		
+	
+	this.importJSON = function(){
+		var json = JSON.parse($scope.importJsonSrc);
+		for(var i=0; i<json.length; i++){
+			var e = json[i];
+			delete e.bmo;
+			delete e.color;
+			e.m = this.id;
+			e.type = 'A';
+			$scope.data.elements[e.id] = e;
+		}
+	};
+	
     }
   }]);

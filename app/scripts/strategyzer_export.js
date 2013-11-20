@@ -10,6 +10,12 @@ App.appView.currentView.currentView.model.postIts().models.sort(function(a, b){r
 	e.color = {color: p.attributes.colour_class};
 	e.bmo = {type: lookupBlock[p.attributes.block]};
 	e.tags = ['c'+ lookupColor.indexOf(p.attributes.colour_class)];
+  e.zone = p.attributes.block;
+  e.x =  p.attributes.left * (p.attributes.block === 'revenue_streams'|| p.attributes.block === 'cost_structure' ? 640 : 256);
+  e.y =  p.attributes.top * (p.attributes.block === 'revenue_streams'||
+    p.attributes.block === 'cost_structure' ? 225 : ( p.attributes.block === 'partner_network' ||
+      p.attributes.block === 'value_proposition' || p.attributes.block === 'customer_segments' ? 675 : 337));  
+  e.id =  p.attributes.guid;
 	elements.push(e);
 });
 

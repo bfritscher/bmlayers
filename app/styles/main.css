@@ -250,7 +250,7 @@ tr.rule-cat > td {
 }
 
 .marker {
-  fill: red;
+  fill: rgb(255, 255, 153);
 }
 
 .control {
@@ -302,16 +302,11 @@ input.model-dname:focus {
 .button {
   cursor: pointer;
   fill: none;
-  stroke: red;
+  stroke: #333;
 }
 
 .button:hover rect {
-  fill: red;
-}
-
-.new {
-  stroke: red;
-  fill: none;
+  fill: #efefef;
 }
 
 g.zones rect {
@@ -319,23 +314,23 @@ g.zones rect {
   fill: none;
 }
 
+g.zones g.new rect,
+g.zones g.old rect,
+g.zones g.diff rect {
+  stroke: none;
+  fill: none;
+}
+
+
 .old {
-  background-color: blue;
-  color: red;
+  /* background-color: blue; */
+  /* color: red; */
+  opacity: 0.4;
 }
 
 .overlay {
   fill: none;
   pointer-events: all;
-}
-
-g.old rect {
-  stroke: blue;
-}
-
-g.diff rect {
-  stroke: red;
-  fill: none;
 }
 
 g.zone {
@@ -347,14 +342,19 @@ g.zone text {
   font-weight: bold;
 }
 
-.link {
-  stroke: red;
+path.delete {
+  fill: red;
   stroke-width: 3px;
+}
+
+.link {
+  stroke: rgb(255, 255, 153);
+  stroke-width: 6px;
   fill: none;
 }
 
 .link.old {
-  stroke: blue;
+  stroke: rgb(255, 255, 153);
 }
 
 #rightmenu {
@@ -455,10 +455,26 @@ g.zone text {
   pointer-events: none;
   text-align: center;
   display: table;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 2px 0px;
+  box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 2px 0px;
+  background-image: -webkit-linear-gradient(top, rgb(255, 255, 127) 0%, rgb(255, 255, 153) 50%, rgb(255, 255, 188) 94%);
 }
 
 .svgelement span {
   display: table-cell;
   vertical-align: middle;
   word-wrap: break-word;
+  font-weight: 700;
+}
+
+.no_selection,
+.zone text {
+  -webkit-user-select: none;
+  /* webkit (safari, chrome) browsers */
+  -moz-user-select: none;
+  /* mozilla browsers */
+  -khtml-user-select: none;
+  /* webkit (konqueror) browsers */
+  -ms-user-select: none;
+  /* IE10+ */
 }
