@@ -430,7 +430,8 @@ angular.module('bmlayersApp')
 			  var model = d3.select(d3.event.sourceEvent.target.parentElement).data()[0];
 			  var oldzone = scope.models[d.value.m].zones[d.value.zone];
 			  if(zone){
-				  if(zone.constructor.name === 'Element'){
+				  //DO not link to itself
+				  if(zone.constructor.name === 'Element' && d.value.id !== zone.id){
 					  scope.$apply(function(){
 						 //create LINK
 						 //TODO check same MODEL
