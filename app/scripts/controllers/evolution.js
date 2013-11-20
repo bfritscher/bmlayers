@@ -5,7 +5,18 @@ angular.module('bmlayersApp')
   function ($scope, angularFire, uuid4, $routeParams, layers) {
     
     var ref = new Firebase('https://bm.firebaseio.com/projects/' + $routeParams.projectid);
-    angularFire(ref, $scope, 'data');
+    angularFire(ref, $scope, 'data').then(function(){
+		if(Object.keys($scope.data.models).length === 0){
+		  var id = uuid4.generate();
+		  $scope.data.models[id] = {id: id};
+		}
+		if(!$scope.data.elements){
+			$scope.data.elements = {};
+		}
+		if(!$scope.data.links){
+			$scope.data.links = {};
+		}
+	});
     $scope.data = {
 		elements:{},
 		models:{},
@@ -49,33 +60,18 @@ angular.module('bmlayersApp')
     //transform DATA to linked objects
 	//TODO data changes should only update local models...
 
+	//augmented model cache
+	$scope.models = {};
+	$scope.elements = {};
+
     $scope.$watch('data', function(){
-	
-      if($scope.data && $scope.data.models){
-        var models = {};
-		var elements = {};
+	  if($scope.data && $scope.data.models){
+		console.log('data');
 		
-		if(Object.keys($scope.data.models).length === 0){
-			var id = uuid4.generate();
-			$scope.data.models[id] = {id: id};
-		}
+
 		
-		//Augment model
-        for(var id in $scope.data.models){			
-		  var model = new Model($scope.data.models[id]);
-		  models[model.id] = model;
-        };
-		//link models
-		for(var id in models){			
-		  var model = models[id];
-		  if(model.parent){
-			var parent = models[model.parent];
-			model.parent = parent;
-			parent.children.push(model);
-		  }
-        };
-		//augment elements && data integrity
-        for(var id in $scope.data.elements){
+		//element data integrity
+		for(var id in $scope.data.elements){
 			var e = $scope.data.elements[id];
 			if(typeof e === 'object'){
 				//FOR NOW set a default zone 
@@ -86,29 +82,69 @@ angular.module('bmlayersApp')
 			  if(!e.tags){
 				e.tags = [];  
 			  }
-			  if(!models[e.m]){
-				  //TODO FIX recover lost elements by adding it to model 0;
-				  e.m = $scope.data.models[Object.keys($scope.data.models)[0]].id;
+			  if(e.p){
+				  var ep = $scope.data.elements[e.p];
+				  if(ep){
+					e.x = ep.x;
+				  	e.y = ep.y;
+				  	e.zone = ep.zone;  
+				  }else{
+					//missing parent recover element
+					delete e.p;
+					e.type = 'A';
+				  }
 			  }
-			  elements[e.id] = new Element($scope.data.elements[id]);
+			  if(!$scope.data.models[e.m]){
+				  //remove elements without models
+				  //TODO: use handleDelete
+				  delete $scope.data.elements[id];
+			  }
 			}
         }
+		
+		//Augment model
+        for(var id in $scope.data.models){
+			if(!$scope.models[id]){
+				$scope.models[id] = new Model($scope.data.models[id]);
+			}
+		  	$scope.models[id].data = $scope.data.models[id]
+        }
+		//link models
+		for(var id in $scope.models){			
+		  var model = $scope.models[id];
+		  if(model.data.p){
+			var parent = $scope.models[model.data.p];
+			model.parent = parent;
+			if(parent.children.indexOf(model) < 0){
+				parent.children.push(model);
+			}
+		  }
+        }
+		//augment elements
+        for(var id in $scope.data.elements){
+			if(!$scope.elements[id]){
+				$scope.elements[id] = new Element($scope.data.elements[id]);
+			}
+			$scope.elements[id].data = $scope.data.elements[id];
+        }
+		
 		//Element obj gets linked
-		for(var id in elements){
-		  var e = elements[id];
-          if(e.p){
-            e.parent = elements[e.p];
-			e.x = e.parent.x;
-			e.y = e.parent.y;
-			e.zone = e.parent.zone;
-			e.parent.children.push(e);
+		for(var id in $scope.elements){
+		  var e = $scope.elements[id];
+          if(e.data.p){
+			var parent = $scope.elements[e.data.p];
+            e.parent = parent;
+			if(e.parent.children.indexOf(parent) < 0){
+				e.parent.children.push(e);
+			}
           }
-		  var model = models[e.m];
-		  model.elements[e.id] = e;
-		  e.model = models[e.m];
-		  
-		  if(zones[e.zone]){
-			  e.zoneObj = zones[e.zone];
+		  var model = $scope.models[e.data.m];
+		  if(model){
+		  	model.elements[e.id] = e;
+		  	e.model = model;
+		  }
+		  if(zones[e.data.zone]){
+			  e.zoneObj = zones[e.data.zone];
 		  }
         }
 		
@@ -142,8 +178,9 @@ angular.module('bmlayersApp')
 			  var points = l.getPoints();
 			  var margin = 5;
 			  var margin2 = 16;
-			  var elementFrom = elements[l.from];
-			  var elementTo = elements[l.to];
+			  //FIIXusing augmented Model
+			  var elementFrom = $scope.elements[l.from];
+			  var elementTo = $scope.elements[l.to];
 			  if(elementFrom && elementTo){
 				  l.points[0].x = Math.max(points[index].x - margin, Math.min(points[index].x + elementFrom.width + margin, l.points[0].x));
 				  l.points[0].y = Math.max(points[index].y - margin, Math.min(points[index].y + elementFrom.height + margin, l.points[0].y));
@@ -155,26 +192,28 @@ angular.module('bmlayersApp')
 				  elementFrom.links[id] = l;
 			  	  elementTo.links[id] = l;
 			  }
-			  if(models[l.m]){
-				models[l.m].links[id] = l;
+			  
+			  //FIIXadd to augment model
+			  if($scope.models[l.m]){
+				$scope.models[l.m].links[id] = l;
 			  }
 		  }
+		  
         }  
-        $scope.models = models;
-		$scope.elements = elements;
-        
         var row = 0;
 		for(var key in $scope.models){
 			if(!$scope.models[key].parent){
         		row = calculatePosition($scope.models[key], 0, row);
 			}
 		}
-      }
-     function calculatePosition(model, column, row){
-        var margin = 10;
+		
+	  }//end if
+    }, true);
+    
+    function calculatePosition(model, column, row){
         //allow to override column limit? or add offsets?
-        if(model.column){
-          column = model.column;
+        if(model.data.c){
+          column = model.data.c;
         }
         model.column = column;
         model.row = row;
@@ -182,10 +221,7 @@ angular.module('bmlayersApp')
           row = calculatePosition(model.children[index], column + 1, row);          
         }
         return model.children.length === 0 ? row + 1 : row;
-      }
-      
-    });
-    
+    }
     
     //Object wrapper and defaults
     var mWidth = 1280;
@@ -262,6 +298,7 @@ angular.module('bmlayersApp')
     };
     function Element(obj){
 		this.id = obj.id;
+		/*
 		this.m = obj.m;
 		this.type = obj.type;
 		this.x = obj.x;
@@ -269,6 +306,8 @@ angular.module('bmlayersApp')
 		this.p = obj.p;
 		this.zone = obj.zone;
 		this.tags = obj.tags;
+		*/
+		this.data = obj;
 		
 		this.model;
 		this.parent;
@@ -283,6 +322,7 @@ angular.module('bmlayersApp')
 					delete $scope.data.links[id];
 				}
 				delete $scope.data.elements[this.id];
+				delete $scope.elements[this.id];
 				$scope.editElement = undefined;
 				return true;
 			}else{
@@ -319,13 +359,17 @@ angular.module('bmlayersApp')
 	}
     
     function Model(obj){
-      this.id = obj.id;
+	  this.id = obj.id;
+	  /*
       this.column = obj.c;
       this.parent = obj.p;
 	  this.name = obj.name;
 	  this.dname = obj.dname;
 	  this.when = obj.when;
 	  this.color = obj.color;
+	  */
+	  this.data = obj;
+	  
       this.children = [];
       this.elements = {};
 	  this.links = {};
@@ -336,7 +380,7 @@ angular.module('bmlayersApp')
         return this.row * (mHeight + rowSpacing);
       };
 	  this.getColor = function(){
-		var color = this.color;
+		var color = this.data.color;
 		if(!color && this.parent){
 			color = this.parent.getColor();
 		}
@@ -404,6 +448,7 @@ angular.module('bmlayersApp')
 				}
 				if(canDelete){
 					delete $scope.data.models[this.id];
+					delete $scope.models[this.id];
 					$scope.editModel = undefined;
 					return true;
 				}else{

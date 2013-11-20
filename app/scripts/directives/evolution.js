@@ -34,7 +34,7 @@ angular.module('bmlayersApp')
         svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
       }
       
-      scope.$watch('models', function(){draw();});
+      scope.$watch('data', function(){draw();});
       
       /* transition via zoom
       var width = 1280, height = 800;
@@ -191,18 +191,21 @@ angular.module('bmlayersApp')
               var zone = d3.select(d3.event.target).data()[0].value;
               //TODO center on element?
               var pos = d3.mouse(this);
-              scope.$apply(function(){
-				var id = uuid4.generate();
-                scope.data.elements[id] = {
-                  id: id,
-                  m: model.value.id,
-				  name: prompt('name?'),
-                  type: 'A',
-                  zone: zone.name,
-                  x: pos[0],
-                  y: pos[1]
-                };
-              });
+			  var name = prompt('name?');
+			  if(name){
+				  scope.$apply(function(){
+					var id = uuid4.generate();
+					scope.data.elements[id] = {
+					  id: id,
+					  m: model.value.id,
+					  name: name,
+					  type: 'A',
+					  zone: zone.name,
+					  x: pos[0],
+					  y: pos[1]
+					};
+				  });
+			  }
           });
         zoneEnter.append('text')
 		.attr('x', 10)
@@ -352,11 +355,11 @@ angular.module('bmlayersApp')
           .attr('y', 20);
         
         element.attr('transform', function(d){
-          var zone = scope.models[d.value.m].zones[d.value.zone];
+          var zone = d.zoneObj;
           var x = zone && zone.x || 0;
           var y = zone && zone.y || 0;
-          x = x + d.value.x || x;
-          y = y + d.value.y || y;
+          x = x + d.value.data.x || x;
+          y = y + d.value.data.y || y;
           return 'translate(' + x + ',' + y + ')';
         });                
         element.select('text').text(function(e){return e.key;});
@@ -380,7 +383,7 @@ angular.module('bmlayersApp')
         
         var drag = d3.behavior.drag()
           .origin(function(d){
-            return {x: d.value.x || 0, y: d.value.y || 0};
+            return {x: d.value.data.x || 0, y: d.value.data.y || 0};
           })
           .on('dragstart', dragstart)
           .on('drag', dragmove)
@@ -394,22 +397,22 @@ angular.module('bmlayersApp')
 		  node.parentNode.appendChild(node);
 		  //zone order
 		  node.parentNode.parentNode.appendChild(node.parentNode);
-		  d.__origin__ = [d.value.x, d.value.y];
+		  d.__origin__ = [d.value.data.x, d.value.data.y];
 		  d.value.__dragging__ = true;
         }
           
         function dragmove(d){
-			if(d.value.type === 'A'){
+			if(d.value.data.type === 'A'){
 			  scope.$apply(function(){
 				scope.data.elements[d.key].x = d3.event.x;
 				scope.data.elements[d.key].y = d3.event.y;
 				draw();
 			  });
 			}
-			if(d.value.type === 'C'){
+			if(d.value.data.type === 'C'){
 				//hacks...
-			  d.value.x = d3.event.x;
-			  d.value.y = d3.event.y;
+			  d.value.data.x = d3.event.x;
+			  d.value.data.y = d3.event.y;
 			  d.value.dragx = d3.event.x;
 			  d.value.dragy = d3.event.y;
 			  draw();
@@ -430,7 +433,7 @@ angular.module('bmlayersApp')
 			 //TODO: fix remove all external dependencies
 			  var zone = d3.select(d3.event.sourceEvent.target).data()[0].value;
 			  var model = d3.select(d3.event.sourceEvent.target.parentElement).data()[0];
-			  var oldzone = scope.models[d.value.m].zones[d.value.zone];
+			  var oldzone = d.value.zoneObj;
 			  if(zone){
 				  //DO not link to itself
 				  if(zone.constructor.name === 'Element' && d.value.id !== zone.id){
@@ -441,7 +444,7 @@ angular.module('bmlayersApp')
 						 scope.data.links[id] = {
 							 from: d.value.id,
 							 to: zone.id,
-							 m: d.value.m,
+							 m: d.value.data.m,
 							 id: id
 						 };
 						 scope.data.elements[d.key].x = d.__origin__[0];
@@ -449,7 +452,7 @@ angular.module('bmlayersApp')
 					  });
 				  }else{
 					  //only A can really be moved
-					  if(d.value.type === 'A'){
+					  if(d.value.data.type === 'A'){
 						  scope.$apply(function(){
 							//TODO BETTER WAY TO ID MODEL
 							if(model.value.constructor.name === 'Model' && model.value.id !== scope.data.elements[d.key].m){
@@ -485,7 +488,7 @@ angular.module('bmlayersApp')
           //OLD elements of previous model
 		  
           element = model.select('g.' + zone.name).selectAll('g.old').data(function(m){
-            return m.value.parent ? d3.map(m.value.parent.all()).entries().filter(function(d){return d.value.zone === zone.name;}) : [];
+            return m.value.parent ? d3.map(m.value.parent.all()).entries().filter(function(d){return d.value.data.zone === zone.name;}) : [];
           }, function(d){ return d.key;});
           
           elementEnter = element.enter()
@@ -512,9 +515,9 @@ angular.module('bmlayersApp')
 						  m: currentModel.id,
 						  type: type,
 						  p: d.value.id,
-						  x: d.value.x,
-						  y: d.value.y,
-						  zone: d.value.zone
+						  x: d.value.data.x,
+						  y: d.value.data.y,
+						  zone: d.value.data.zone
 						};
 					  });
 					}
@@ -532,14 +535,14 @@ angular.module('bmlayersApp')
           
           
           element.select('text').text(function(e){return e.key;});
-          element.attr('transform', function(d){ return 'translate(' + (d.value.x || 0) + ',' + (d.value.y || 0) + ')';});
+          element.attr('transform', function(d){ return 'translate(' + (d.value.data.x || 0) + ',' + (d.value.data.y || 0) + ')';});
           
           element.exit().remove();
           
           // NEW ELEMENTS
           
           element = model.select('g.' + zone.name).selectAll('g.new').data(function(m){
-            return d3.map(m.value.elements).entries().filter(function(d){return d.value.zone === zone.name;});
+            return d3.map(m.value.elements).entries().filter(function(d){return d.value.data.zone === zone.name;});
           }, function(d){ return d.key;});
           
           elementEnter = element.enter().append('g')
@@ -575,10 +578,10 @@ angular.module('bmlayersApp')
           
           //if type D or C follow previous except if C is dragging
           element.attr('transform', function(d){
-			if(d.value.type === 'A'){
+			if(d.value.data.type === 'A'){
 				
-				return 'translate(' + (d.value.x || 0) + ',' + (d.value.y || 0) + ')'; 
-			}else if(d.value.type === 'C' && d.value.__dragging__){
+				return 'translate(' + (d.value.data.x || 0) + ',' + (d.value.data.y || 0) + ')'; 
+			}else if(d.value.data.type === 'C' && d.value.__dragging__){
 				//WTF bug??? d.value.x does not return updated value..
 				return 'translate(' + (d.value.dragx || 0) + ',' + (d.value.dragy || 0) + ')'; 
 			}else{

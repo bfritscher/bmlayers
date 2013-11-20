@@ -366,6 +366,7 @@ g.zone text {
   position: absolute;
   right: 0;
   top: 0;
+  overflow-y: scroll;
 }
 
 .bs-docs-sidenav {
@@ -440,6 +441,14 @@ g.zone text {
   padding-left: 4px;
 }
 
+#rightmenu .btn.btn-danger {
+  margin-top: 20px;
+}
+
+#rightmenu .close {
+  padding: 2px 2px 0 0;
+}
+
 .svgelement {
   height: 100%;
   width: 100%;
@@ -447,7 +456,8 @@ g.zone text {
   text-align: center;
   display: table;
 }
-.svgelement span{
+
+.svgelement span {
   display: table-cell;
   vertical-align: middle;
   word-wrap: break-word;

@@ -35,8 +35,12 @@
         <p>dname: <input type="text" ng-model="data.models[editModel.id].dname" ng-disabled="editModel.column == 0"/></p>
         <p>when: <input type="text" ng-model="data.models[editModel.id].when" /></p>
         <p>color: <input type="text" ng-model="data.models[editModel.id].color" /></p>
+        <div class="tags">
+	       <div ng-repeat="t in data.tags" class="tag" ng-class="{hidden: data.models[editModel.id].color != t.color}"
+            style="background-color:{{t.color}};" ng-click="data.models[editModel.id].color=t.color"></div>
+		</div>
         <p>row: {{editModel.row}}, column: {{editModel.column}}</p>
-        <p>fix column: <input type="text" ng-model="data.models[editModel.id].c" /></p>
+        <p>fix column: <input type="text" class="span1" ng-model="data.models[editModel.id].c" /></p>
         <p><button ng-click="editModel.addStep()" class="btn btn-primary">add step</button></p>
         <p><button ng-click="editModel.handleDelete()" class="btn btn-danger">delete step</button></p>
     </div>
