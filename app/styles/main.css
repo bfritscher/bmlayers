@@ -342,8 +342,12 @@ g.zone text {
 }
 
 path.delete {
-  fill: red;
+  stroke: red;
   stroke-width: 3px;
+}
+
+path.import {
+  fill: green;
 }
 
 .link {

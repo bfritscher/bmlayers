@@ -123,6 +123,7 @@ angular.module('bmlayersApp')
 			model.children = [];
 			model.elements = {};
 			model.links = {};
+			delete model.parent;
 		}
 		for(var id in $scope.models){			
 		  var model = $scope.models[id];
@@ -512,6 +513,13 @@ angular.module('bmlayersApp')
 			$scope.data.elements[e.id] = e;
 		}
 	};
+	this.getParents = function(){
+		var parents = [this.id];
+		if(this.parent){
+			parents = this.parent.getParents().concat(parents);
+		}
+		return parents;
+	}
 	
     }
   }]);

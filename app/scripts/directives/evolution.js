@@ -118,6 +118,9 @@ angular.module('bmlayersApp')
 			.x(function(d){return d.x;})
 			.y(function(d){return d.y;});
 		
+		var lineFlat = d3.svg.line()
+			.x(function(d){return d.x;})
+			.y(function(d){return d.y;});
 		
 		function updateLink(link){
           link.select('path').attr('d', function(d){
@@ -425,24 +428,25 @@ angular.module('bmlayersApp')
         }
         
         function dragend(d){
-			d.value.__dragging__ = false;
+		  d.value.__dragging__ = false;
 		  if(Math.abs(scope.data.elements[d.key].x-d.__origin__[0]) < 2 && Math.abs(scope.data.elements[d.key].y-d.__origin__[1]) <2)	{
-			  scope.$apply(function(){
-				if(scope.editElement && scope.editElement.id === d.value.id){
-				  scope.editElement = undefined;
-				}else{
-				  scope.editElement = d.value;
-				}
-			  });
+			//simulate element click
+			scope.$apply(function(){
+			  if(scope.editElement && scope.editElement.id === d.value.id){
+				scope.editElement = undefined;
+		      }else{
+				scope.editElement = d.value;
+			  }
+			});
 		  }else{
-			 //TODO: fix remove all external dependencies
-			  var zone = d3.select(d3.event.sourceEvent.target).data()[0].value;
-			  var model = d3.select(d3.event.sourceEvent.target.parentElement).data()[0];
-			  var oldzone = d.value.zoneObj;
-			  if(zone){
-				  //DO not link to itself
-				  if(zone.constructor.name === 'Element' && d.value.id !== zone.id){
-					  scope.$apply(function(){
+			//TODO: fix remove all external dependencies
+			var zone = d3.select(d3.event.sourceEvent.target).data()[0].value;
+			var model = d3.select(d3.event.sourceEvent.target.parentElement).data()[0];
+			var oldzone = d.value.zoneObj;
+			if(zone){
+			  //DO not link to itself
+			  if(zone.constructor.name === 'Element' && d.value.id !== zone.id){
+			    scope.$apply(function(){
 						 //create LINK
 						 //TODO check same MODEL
 						 var id = uuid4.generate();
@@ -456,30 +460,32 @@ angular.module('bmlayersApp')
 						 scope.data.elements[d.key].x = d.__origin__[0];
 						 scope.data.elements[d.key].y = d.__origin__[1];
 					  });
+			  }else{
+				//only A can really be moved or C if to a new model not in parent => cross import
+				//TODO BETTER WAY TO ID MODEL
+				if(model.value.constructor.name === 'Model' && model.value.id !== scope.data.elements[d.key].m && (d.value.data.type === 'A' || d.value.data.type === 'C')){
+				  var oldModel = scope.models[scope.data.elements[d.key].m];
+				  //TODO: HANDLE DEPENDENCIES
+				  //THIS only works if models have same zone positions
+				  scope.$apply(function(){
+					scope.data.elements[d.key].m = model.value.id;
+					scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x + oldModel.x() - model.value.x();
+					scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y + oldModel.y() - model.value.y();
+					scope.data.elements[d.key].zone = zone.name;
+				  });
+				}else{
+				  if(d.value.data.type === 'A'){
+					scope.$apply(function(){
+						scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x;
+						scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y;
+						scope.data.elements[d.key].zone = zone.name;
+					});
 				  }else{
-					  //only A can really be moved
-					  if(d.value.data.type === 'A'){
-						  scope.$apply(function(){
-							//TODO BETTER WAY TO ID MODEL
-							if(model.value.constructor.name === 'Model' && model.value.id !== scope.data.elements[d.key].m){
-							  var oldModel = scope.models[scope.data.elements[d.key].m];
-							  //TODO: HANDLE DEPENDENCIES
-							  //THIS only works if models have same zone positions
-							  scope.data.elements[d.key].m = model.value.id;
-							  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x + oldModel.x() - model.value.x();
-							  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y + oldModel.y() - model.value.y();
-							}else{
-							  scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x;
-							  scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y;
-							}
-							scope.data.elements[d.key].zone = zone.name;                
-						  });
-					  }else{
-						  //no data has changed need to manualy call draw
-						  draw();
-					  }
+					draw();
 				  }
+				}
 			  }
+			}
 		  }
           d3.select(this).style('pointer-events', 'all');       
         }
@@ -515,6 +521,17 @@ angular.module('bmlayersApp')
 				  .each(function(d){
 					 $compile(this)(scope);
 				  });
+				  
+				  //detect import (element's parent not in my models chain)
+				  if(d.value.data.type === 'C' && d.value.model.getParents().indexOf(d.value.parent.model.id) < 0){
+					element.append('path')
+					.attr('class', 'import')
+					.attr('d', function(d){
+						var w = d.value.width;
+						var h = d.value.height;
+						return lineFlat([{x:-8,y:0.3*h}, {x:w*0.1,y:0.5*h}, {x:-8,y:0.7*h}])
+					});
+				  }
 				}else{
 					element.append('path')
 					.attr('class', 'delete')

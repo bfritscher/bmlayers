@@ -4,9 +4,12 @@
         <button ng-click="editElement=undefined" class="close">&times;</button>
         <h2>Element</h2>
         <p>id: {{editElement.id}}</p>
-        <p>type: {{editElement.type}}</p>
-        <p>name: <input type="text" ng-model="data.elements[editElement.id].name" /></p>
-        <div class="tags">
+        <p>type: {{editElement.data.type}}</p>
+		<p ng-show="editElement.parent">parent: {{editElement.parent.model.data.name}}#{{editElement.parent.data.name}}
+		<span ng-show="editElement.model.getParents().indexOf(editElement.parent.model.id) < 0">Import!</span>
+		</p>
+        <p ng-hide="editElement.data.type == 'D'">name: <input type="text" ng-model="data.elements[editElement.id].name" /></p>
+        <div ng-hide="editElement.data.type == 'D'" class="tags">
 	       <div ng-repeat="t in data.tags" class="tag" ng-class="{hidden: data.elements[editElement.id].tags.indexOf(t.id) < 0}"
             style="background-color:{{t.color}};" title="{{t.name}}" ng-click="editElement.toggleTag(t, $event)"></div>
 		</div>
@@ -32,7 +35,7 @@
         <button ng-click="editModel=undefined" class="close">&times;</button>
         <h2>Business Model</h2>
         <p>name: <input type="text" ng-model="data.models[editModel.id].name" /></p>
-        <p>dname: <input type="text" ng-model="data.models[editModel.id].dname" ng-disabled="editModel.column == 0"/></p>
+        <p>dname: <input type="text" ng-model="data.models[editModel.id].dname" ng-disabled="!editModel.parent"/></p>
         <p>when: <input type="text" ng-model="data.models[editModel.id].when" /></p>
         <p>color: <input type="text" ng-model="data.models[editModel.id].color" /></p>
         <div class="tags">
@@ -43,6 +46,7 @@
         <p>fix column: <input type="text" class="span1" ng-model="data.models[editModel.id].c" /></p>
         <p><button ng-click="editModel.addStep()" class="btn btn-primary">add step</button></p>
         <p><button ng-click="editModel.handleDelete()" class="btn btn-danger">delete step</button></p>
+		<p ng-hide="!editModel.parent"><button ng-click="data.models[editModel.id].p=undefined" class="btn btn-warning">make orphan</button></p>
 		<textarea ng-model="importJsonSrc" placeholder="JSON"></textarea>
     	<button class="btn" ng-click="editModel.importJSON()">Import</button>
 		<h3>Global</h3>
