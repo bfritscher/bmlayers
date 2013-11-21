@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('bmlayersApp')
-  .directive('evolution', ['$filter', 'uuid4', '$compile', function($filter, uuid4, $compile) {
+  .directive('evolution', ['$filter', 'uuid4', '$compile', '$timeout', function($filter, uuid4, $compile, $timeout) {
     return function(scope, elem, attrs) {
       
       var zoom = d3.behavior.zoom()
@@ -61,6 +61,7 @@ angular.module('bmlayersApp')
          
       function draw(){
 		console.log('draw');
+		
         var svg = d3.select(elem[0]).select('g');  
                 
         //Model
@@ -74,37 +75,7 @@ angular.module('bmlayersApp')
           .attr('transform', 'translate(0,-380)');
         
         var modelMenu = model.select('g.model-menu');
-        
-        function makeButton(selection, label, x, y){
-          x = x || 0;
-          y = y || 0;
-          var button = selection.append('g')
-          .attr('transform', 'translate(' + x + ',' + y + ')')
-		  .attr('class', 'button');
-          button.append('rect')
-          .attr('x', 0)
-          .attr('y', 0)
-          .attr('width', 30)
-          .attr('height', 30); 
-          
-          button.append('text')
-          .attr('x', 10)
-          .attr('y', 20)
-          .text(label);
-          
-          return button;
-        }
-		makeButton(modelMenuEnter, 'O', 1280, 380)
-		.on('click', function(d){
-			scope.$apply(function(){
-				if(scope.editModel && scope.editModel.id  === d.value.id){
-					scope.editModel = undefined;
-				}else{
-					scope.editModel = d.value;
-				}
-			});
-		});
-		
+        		
 		modelMenuEnter
 		.append('foreignObject')
 		  .attr('width', function(d){return d.value.width;})
@@ -181,33 +152,64 @@ angular.module('bmlayersApp')
             return d.value.name + ' zone';
           });
 			
-        zoneEnter.append('rect')
+		function onClickAndDblClick(element, onClick, onDblClick){
+			var timer;
+			element.on('click', function(d){
+			  if(d.value.__clickedOnce__){
+				  d.value.__clickedOnce__ = false;
+				  $timeout.cancel(timer);
+				  onDblClick.call(this, d);
+			  } else {
+				  var that = this;
+				 timer = $timeout(function(){	  
+					d.value.__clickedOnce__ = false;
+					onClick.call(that, d);
+				 }, 200, false);
+				 d.value.__clickedOnce__ = true;
+		  	  }
+			});
+		}
+			
+        var rect = zoneEnter.append('rect')
           .attr('x', 0)
           .attr('y', 0)
           .attr('width', function(d){ return d.value.width;})
-          .attr('height', function(d){ return d.value.height;})
-          .on('dblclick', function(d){
-              //ADD new element
-              var model = d3.select(d3.event.target.parentElement).data()[0];
-              var zone = d3.select(d3.event.target).data()[0].value;
-              //TODO center on element?
-              var pos = d3.mouse(this);
-			  var name = prompt('name?');
-			  if(name){
-				  scope.$apply(function(){
-					var id = uuid4.generate();
-					scope.data.elements[id] = {
-					  id: id,
-					  m: model.value.id,
-					  name: name,
-					  type: 'A',
-					  zone: zone.name,
-					  x: pos[0],
-					  y: pos[1]
-					};
-				  });
-			  }
-          });
+          .attr('height', function(d){ return d.value.height;});
+		onClickAndDblClick(rect,
+			function(d){
+				var model = d3.select(this.parentNode).datum().value;
+				scope.$apply(function(){  
+					if(scope.editModel && scope.editModel.id  === model.id){
+						scope.editModel = undefined;
+					}else{
+						scope.editModel = model;
+					}
+				});
+					
+			},
+			function(d){
+					  //ADD new element
+					  var model = d3.select(d3.event.target.parentElement).data()[0];
+					  var zone = d3.select(d3.event.target).data()[0].value;
+					  //TODO center on element?
+					  var pos = d3.mouse(this);
+					  var name = prompt('name?');
+					  if(name){
+						  scope.$apply(function(){
+							var id = uuid4.generate();
+							scope.data.elements[id] = {
+							  id: id,
+							  m: model.value.id,
+							  name: name,
+							  type: 'A',
+							  zone: zone.name,
+							  x: pos[0],
+							  y: pos[1]
+							};
+						  });
+					  }
+			});
+    
         zoneEnter.append('text')
 		.attr('x', 10)
         .attr('y', 10)
@@ -232,41 +234,46 @@ angular.module('bmlayersApp')
           })
         });
         
-		linkEnter.append('path')
+		var path = linkEnter.append('path')
 		.attr("marker-end", "url(#arrowhead)")
-        .on('click', function(d){
-          scope.$apply(function(){
-            if(scope.editLink && scope.editLink.id === d.value.id){
-              scope.editLink = undefined;
-            }else{
-              scope.editLink = d.value;
-            }
-          });
-        })
-		.on('dblclick', function(d){
-			var cursor = d3.mouse(this);
-			var point = {x: cursor[0], y: cursor[1]};
-			function getInsertLocation(){
-				if(d.value.points[0].x < point.x){
-					for(var i = 0; i < d.value.points.length; i++){
-						if(point.x < d.value.points[i].x){
-							return i;
-						}
-					}
-					return i-1;
+		
+		
+		onClickAndDblClick(path, 
+			function(d){
+			  scope.$apply(function(){
+				if(scope.editLink && scope.editLink.id === d.value.id){
+				  scope.editLink = undefined;
 				}else{
-					for(var i = 0; i < d.value.points.length; i++){
-						if(point.x > d.value.points[i].x){
-							return i;
+				  scope.editLink = d.value;
+				}
+			  });
+			},
+			function(d){
+				if(scope.editLink && scope.editLink.id === d.value.id){
+					var cursor = d3.mouse(this);
+					var point = {x: cursor[0], y: cursor[1]};
+					var getInsertLocation = function(){
+						if(d.value.points[0].x < point.x){
+							for(var i = 0; i < d.value.points.length; i++){
+								if(point.x < d.value.points[i].x){
+									return i;
+								}
+							}
+							return i-1;
+						}else{
+							for(var i = 0; i < d.value.points.length; i++){
+								if(point.x > d.value.points[i].x){
+									return i;
+								}
+							}
+							return i-1;
 						}
 					}
-					return i-1;
+					scope.$apply(function(){
+						scope.data.links[d.key].points.splice(getInsertLocation(), 0, point);
+					});
 				}
-			}
-			scope.$apply(function(){
-				scope.data.links[d.key].points.splice(getInsertLocation(), 0, point);
 			});
-		});
 		
 		
 		var circleControl = link.selectAll("circle.control")
