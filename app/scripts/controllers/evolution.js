@@ -238,9 +238,9 @@ angular.module('bmlayersApp')
         model.column = column;
         model.row = row;
         for(var index=0; index < model.children.length; index++){
-          row = calculatePosition(model.children[index], column + 1, row);          
+          row = calculatePosition(model.children[index], parseInt(column) + 1, row);          
         }
-        return model.children.length === 0 ? row + 1 : row;
+        return model.children.length === 0 ? parseInt(row) + 1 : row;
     }
     
     //Object wrapper and defaults
