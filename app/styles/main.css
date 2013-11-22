@@ -270,14 +270,16 @@ input.model-name {
   height: 200px;
 }
 
-input.model-dname {
+input.model-dname,
+input.model-when {
   font-size: 90px;
   line-height: 90px;
   height: 150px;
 }
 
 input.model-name,
-input.model-dname {
+input.model-dname,
+input.model-when{
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -293,7 +295,8 @@ input.model-dname {
 }
 
 input.model-name:focus,
-input.model-dname:focus {
+input.model-dname:focus,
+input.model-when:focus{
   outline-offset: 0;
   -webkit-box-shadow: none;
   box-shadow: none;
@@ -482,4 +485,12 @@ path.import {
   /* webkit (konqueror) browsers */
   -ms-user-select: none;
   /* IE10+ */
+}
+
+.hide-old-links .old-links{
+  display:none;
+}
+
+.hide-old-links .links{
+  display:none;
 }

@@ -62,7 +62,9 @@ angular.module('bmlayersApp')
       function draw(){
 		console.log('draw');
 		
-        var svg = d3.select(elem[0]).select('g');  
+        var svg = d3.select(elem[0]).select('g');
+		svg.classed('hide-links', scope.hideLinks);
+		svg.classed('hide-old-links', scope.hideOldLinks);
                 
         //Model
         var model = svg.selectAll('g.model').data(d3.map(scope.models).entries(), function(d){return d.key;});
@@ -78,7 +80,8 @@ angular.module('bmlayersApp')
         		
 		modelMenuEnter
 		.append('foreignObject')
-		  .attr('width', function(d){return d.value.width;})
+		  .attr('x', -300)
+		  .attr('width', function(d){return d.value.width + 600;})
 		  .attr('height', 200)
 		  .append('xhtml:body')
 		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
@@ -94,7 +97,7 @@ angular.module('bmlayersApp')
 		  .attr('x', 0)
 		  .append('xhtml:body')
 		  .attr('xmlns', 'http://www.w3.org/1999/xhtml')
-		  .html(function(d){ return '<input class="model-dname" type="text" ng-style="{color: models[\''+ d.key + '\'].getColor()}" ng-model="data.models[\''+ d.key + '\'].when" placeholder="when"/>';})
+		  .html(function(d){ return '<input class="model-when" type="text" ng-style="{color: models[\''+ d.key + '\'].getColor()}" ng-model="data.models[\''+ d.key + '\'].when" placeholder="when"/>';})
 		  .each(function(d){
 			 $compile(this)(scope);
 		  });
@@ -331,9 +334,9 @@ angular.module('bmlayersApp')
 			.attr('class', 'model-menu')
 			.attr('transform', 'translate(0,-200)')
 			.append('foreignObject')
-			  .attr('x', 0)
+			  .attr('x', -200)
 			  .attr('y', 0)
-			  .attr('width', function(d){return d.value.width;})
+			  .attr('width', function(d){return d.value.width + 400;})
 			  .attr('height', 150)
 			  .attr('class', 'dname')
 			  .append('xhtml:body')
