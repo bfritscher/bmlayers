@@ -487,10 +487,10 @@ path.import {
   /* IE10+ */
 }
 
-.hide-old-links .old-links{
+.hide-links-old .links-old{
   display:none;
 }
 
-.hide-old-links .links{
+.hide-links .links{
   display:none;
 }

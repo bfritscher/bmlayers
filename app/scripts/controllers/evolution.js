@@ -18,7 +18,11 @@ angular.module('bmlayersApp')
 		tags: layers.tags.tags
 	};
 	
-    $scope.showDiff = true;
+    $scope.options ={
+		showDiff: true,
+		showLinks: true,
+		showLinksOld: true
+    };
     
     /*
     $scope.data = {
@@ -409,7 +413,7 @@ angular.module('bmlayersApp')
       this.elements = {};
 	  this.links = {};
       this.x = function(){
-        return this.column * (($scope.showDiff ? 2 : 1) * mWidth + colSpacing);
+        return this.column * (($scope.options.showDiff ? 2 : 1) * mWidth + colSpacing);
       };
       this.y = function(){
         return this.row * (mHeight + rowSpacing);

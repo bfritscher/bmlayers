@@ -5,8 +5,8 @@ angular.module('bmlayersApp')
     return function(scope, elem, attrs) {
       
       var zoom = d3.behavior.zoom()
-      .translate([0, 0])
-      .scale(1)
+      .translate([50, 50])
+      .scale(0.1)
       .scaleExtent([0.1, 8])
       .on("zoom", zoomed);
       
@@ -28,14 +28,14 @@ angular.module('bmlayersApp')
 			.attr('class', 'marker')
 			.attr("d", "M 0,0 V 12 L18,6 Z");
       
-      var  svg = d3.select(elem[0]).append('g');  
-	  
+      var  svg = d3.select(elem[0]).append('g')
+	  	.attr("transform", "translate(50,50)scale(0.1)")
+	  ;  
       function zoomed() {
         svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
       }
-      
       scope.$watch('data', function(){draw();}, true);
-	  scope.$watch('showDiff', function(){draw();});
+	  scope.$watch('options', function(){draw();}, true);
       
       /* transition via zoom
       var width = 1280, height = 800;
@@ -63,8 +63,8 @@ angular.module('bmlayersApp')
 		console.log('draw');
 		
         var svg = d3.select(elem[0]).select('g');
-		svg.classed('hide-links', scope.hideLinks);
-		svg.classed('hide-old-links', scope.hideOldLinks);
+		svg.classed('hide-links', !scope.options.showLinks);
+		svg.classed('hide-links-old', !scope.options.showLinksOld);
                 
         //Model
         var model = svg.selectAll('g.model').data(d3.map(scope.models).entries(), function(d){return d.key;});
@@ -325,7 +325,7 @@ angular.module('bmlayersApp')
         model.attr('transform', function(m){return 'translate(' + m.value.x() + ',' + m.value.y() + ')';});
         
         //modelDiff boxes
-		if(scope.showDiff){
+		if(scope.options.showDiff){
 			var modelDiff = svg.selectAll('g.diff').data(d3.map(scope.models).entries().filter(function(e){return e.value.parent;}));
 			var modelDiffEnter = modelDiff.enter().append('g')
 			  .attr('class', 'diff');
