@@ -13,6 +13,10 @@
 	       <div ng-repeat="t in data.tags" class="tag" ng-class="{hidden: data.elements[options.editElementID].tags.indexOf(t.id) < 0}"
             style="background-color:{{t.color}};" title="{{t.name}}" ng-click="elements[options.editElementID].toggleTag(t, $event)"></div>
 		</div>
+		<p ng-show="elements[options.editElementID].data.type == 'C'">changeType: 
+		<input type="radio" ng-model="data.elements[options.editElementID].changeType" value="" /> ?
+      	<input type="radio" ng-model="data.elements[options.editElementID].changeType" value="i" /> ++
+      	<input type="radio" ng-model="data.elements[options.editElementID].changeType" value="d" /> --</p>
         
         <p><button ng-click="elements[options.editElementID].handleDelete()" class="btn btn-danger">delete element</button></p>
     </div>
@@ -55,5 +59,6 @@
 		<p>show links: <input type="checkbox" ng-model="options.showLinks"/></p>
 		<p>show previous links: <input type="checkbox" ng-model="options.showLinksOld"/></p>
 		<p>show dep links: <input type="checkbox" ng-model="options.showDep"/></p>
+		<p>show chart: <input type="checkbox" ng-model="options.showChart"/></p>
     </div>
 </div>

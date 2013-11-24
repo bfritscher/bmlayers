@@ -29,8 +29,10 @@ angular.module('bmlayersApp')
 			.attr("d", "M 0,0 V 12 L18,6 Z");
       
       var  svg = d3.select(elem[0]).append('g')
-	  	.attr("transform", "translate(50,50)scale(0.1)")
-	  ;  
+	  	.attr("transform", "translate(50,50)scale(0.1)");  
+	  
+	  svg.append('g').attr('class', 'model-chart');
+	  
       function zoomed() {
         svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
       }
@@ -78,6 +80,7 @@ angular.module('bmlayersApp')
 			.x(function(d){return d.x;})
 			.y(function(d){return d.y;});
 		
+		var area = d3.svg.area();
 		
 		if(scope.options.transitionTo){			
 			var m = scope.models[scope.options.transitionTo];
@@ -90,6 +93,38 @@ angular.module('bmlayersApp')
 		svg.classed('hide-links', !scope.options.showLinks);
 		svg.classed('hide-links-old', !scope.options.showLinksOld);
 		svg.classed('hide-dep', !scope.options.showDep);
+		svg.classed('hide-chart', !scope.options.showChart);
+
+
+
+        var chart = svg.select('g.model-chart').selectAll('path').data(scope.rows);
+		chart.enter().append('path');
+		chart.attr('transform', function(d){
+			return 'translate(0,' +d.y+')';
+		})
+		.attr('d', function(d){ return area(d.data);})
+		.attr('fill', function(d){ return d.color;});
+		
+        /*
+        var chart = svg.append('g').attr('class', 'model-chart').selectAll('g').data(scope.rows);
+		chart.enter().append('g')
+		.attr('transform', function(d){
+			return 'translate(0,' +d.y+')';
+		})
+		.each(function(d, row){
+			drawChart(this, d);
+			
+			//previous
+			for(var i=0; i < row; i++){
+				drawChart(this, scope.rows[i]);
+			}
+		});
+		function drawChart(e, d){
+			d3.select(e).append('path')
+			.attr('class', 'parent-chart')
+			.attr('d', area(d.data));
+      	}
+		*/
                 
         //Model
         var model = svg.selectAll('g.model').data(d3.map(scope.models).entries(), function(d){return d.key;});
@@ -106,7 +141,7 @@ angular.module('bmlayersApp')
 			var m = d.value;
 			if(m.children.length > 1){
 				var to = m.children[m.children.length-1];
-				return lineFlat([{x:m.width/2, y:m.height+m.rowSpacing},{x:m.width/2, y: to.y()-m.y() + (to.height/2)}]);
+				return lineFlat([{x:m.width/2, y:m.height+m.rowSpacing()},{x:m.width/2, y: to.y()-m.y() + (to.height/2)}]);
 			}
 		});
         model.selectAll('.model-dep path.parent').attr('d', function(d){
@@ -118,7 +153,7 @@ angular.module('bmlayersApp')
 				return "M0,0";
 			}
 		});
-        
+                
         
 		//create model MENU
         var modelMenuEnter = modelEnter.append('g')
@@ -401,7 +436,16 @@ angular.module('bmlayersApp')
 			}, function(d){ return d.key;});
 			
 			var elementEnter = element.enter().append('g')
-			  .attr('class', 'new');
+			  .attr('class', 'new')
+			  .on('click', function(d){
+				  scope.$apply(function(){
+				  if(scope.options.editElementID === d.value.id){
+					scope.options.editElementID = undefined;
+				  }else{
+					scope.options.editElementID = d.value.id;
+				  }
+				});
+			  });
 			
 			createElementHtmlBody(elementEnter);
 			
@@ -517,6 +561,9 @@ angular.module('bmlayersApp')
 					scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x + oldModel.x() - model.value.x();
 					scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y + oldModel.y() - model.value.y();
 					scope.data.elements[d.key].zone = zone.name;
+					if(d.value.data.type === 'C'){
+						scope.data.elements[d.key].type = 'I';
+					}
 				  });
 				}else{
 				  if(d.value.data.type === 'A'){
@@ -545,7 +592,8 @@ angular.module('bmlayersApp')
 			element.each(function(d){
 				var element = d3.select(this);
 				if(d.value.data.type !== 'D'){
-					element.append('rect')
+					//DISPLAY POST-IT
+				  element.append('rect')
 					.attr('x',0)
 					.attr('y',0)
 					.attr('width', function(d){return d.value.width;})
@@ -561,14 +609,14 @@ angular.module('bmlayersApp')
 				  .attr('style', function(d){return 'width:' + d.value.width + 'px;height:' + d.value.height + 'px' ;})
 				  .html(function(d){
 					  return '<div class="svgelement" style="{{elementStyle(data.elements[\'' + d.key + '\'])}}">'
-					  + '<span>{{data.elements[\'' + d.key + '\'].name}}</span></div>';
+					  + '<span>{{data.elements[\'' + d.key + '\'].name}} {{data.elements[\'' + d.key + '\'].type}}</span></div>';
 				  })
 				  .each(function(d){
 					 $compile(this)(scope);
 				  });
 				  
 				  //detect import (element's parent not in my models chain)
-				  if(d.value.data.type === 'C' && d.value.model.getParents().indexOf(d.value.parent.model.id) < 0){
+				  if(d.value.data.type === 'I'){
 					element.append('path')
 					.attr('class', 'import')
 					.attr('d', function(d){
@@ -577,7 +625,27 @@ angular.module('bmlayersApp')
 						return lineFlat([{x:-8,y:0.3*h}, {x:w*0.1,y:0.5*h}, {x:-8,y:0.7*h}])
 					});
 				  }
+				  if(d.value.data.type === 'C'){
+					var p = element.append('path')
+					scope.$watch('data.elements[\''+ d.key +'\'].changeType', function(){
+						p.attr('d', function(d){
+							var w = d.value.width;
+							var h = d.value.height;
+							if(d.value.data.changeType && d3.select(this.parentElement.parentElement).datum().key === d.value.model.id){
+								return d.value.data.changeType === 'i' ? lineFlat([{x: w-4, y: h-4},
+												 {x: w-19, y: h-26},
+												 {x: w-34, y: h-4}]) : lineFlat([{x: w-4, y: h-26},
+												 {x: w-19, y: h-4},
+												 {x: w-34, y: h-26}]);
+							}else{
+								return "M0,0";
+							}
+						})
+						.attr('class', 'change-type change-type-' + d.value.data.changeType);
+					});
+				  }
 				}else{
+					//DISPLAY DELETE
 					element.append('path')
 					.attr('class', 'delete')
 					.attr('d', function(d){ return line([{x:0,y:0}, {x:d.value.width,y:d.value.height}])});
@@ -624,6 +692,7 @@ angular.module('bmlayersApp')
 						  zone: d.value.data.zone,
 						  tags: angular.copy(d.value.data.tags)
 						};
+						scope.options.editElementID = id;
 					  });
 					}
 				}

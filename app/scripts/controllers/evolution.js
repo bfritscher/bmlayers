@@ -22,7 +22,8 @@ angular.module('bmlayersApp')
 		showDiff: true,
 		showLinks: true,
 		showLinksOld: true,
-		showDep: true
+		showDep: true,
+		showChart: true
     };
     
     /*
@@ -62,7 +63,9 @@ angular.module('bmlayersApp')
 	};
 	
 	$scope.elementStyle = function (element){
-		return layers.elementStyle(element, $scope.data.tags);
+		if(element){
+			return layers.elementStyle(element, $scope.data.tags);
+		}
 	};
 
     //transform DATA to linked objects
@@ -226,12 +229,13 @@ angular.module('bmlayersApp')
 		  
         }  
         var row = 0;
+		$scope.rows = [];
 		for(var key in $scope.models){
 			if(!$scope.models[key].parent){
         		row = calculatePosition($scope.models[key], 0, row);
 			}
 		}
-		
+
 	  }//end if
     }, true);
     
@@ -242,6 +246,13 @@ angular.module('bmlayersApp')
         }
         model.column = column;
         model.row = row;
+		
+		//graph data
+		var rows = $scope.rows[row] || {y:model.y()+model.height+(model.rowSpacing()/2), color: model.getColor(),data:[]};
+		rows.data.push([model.x()-((($scope.showDiff ? model.width : 0) + model.colSpacing)/2), -model.height*Math.random()]);
+		rows.data.push([model.x()+(model.width/2), -model.height*Math.random()]);
+		$scope.rows[row] = rows;
+        
         for(var index=0; index < model.children.length; index++){
           row = calculatePosition(model.children[index], parseInt(column) + 1, row);          
         }
@@ -253,7 +264,7 @@ angular.module('bmlayersApp')
     var mHeight = 900;
 	var eWidth = mWidth / 5 * 0.39;
 	var eHeight = eWidth / 9 * 8;
-    var rowSpacing = 700;
+    var rowSpacing = 1000;
 	var colSpacing = 300;
     
     var zones = {
@@ -414,10 +425,10 @@ angular.module('bmlayersApp')
       this.elements = {};
 	  this.links = {};
       this.x = function(){
-        return this.column * (($scope.options.showDiff ? 2 : 1) * mWidth + colSpacing);
+        return this.column * (($scope.options.showDiff ? 2 : 1) * mWidth + this.colSpacing);
       };
       this.y = function(){
-        return this.row * (mHeight + rowSpacing);
+        return this.row * (mHeight + this.rowSpacing());
       };
 	  this.getColor = function(){
 		var color = this.data.color;
@@ -427,7 +438,9 @@ angular.module('bmlayersApp')
 		return color;
 	  };
 	  this.colSpacing = colSpacing;
-	  this.rowSpacing = rowSpacing;
+	  this.rowSpacing = function(){
+		  return $scope.options.showChart ? rowSpacing + 700 : rowSpacing;
+	  };
 	  this.width = mWidth;
 	  this.height = mHeight;
       this.zones = zones;
@@ -449,7 +462,7 @@ angular.module('bmlayersApp')
               //element.data.zone = element.parent.zone;
               delete elements[element.parent.id];
             }
-          } else if('C' === element.data.type){
+          } else if('C' === element.data.type || 'I' === element.data.type){
             //replace linked element with current
             if(element.parent){
               delete elements[element.parent.id];

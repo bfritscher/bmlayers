@@ -279,7 +279,7 @@ input.model-when {
 
 input.model-name,
 input.model-dname,
-input.model-when{
+input.model-when {
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -296,7 +296,7 @@ input.model-when{
 
 input.model-name:focus,
 input.model-dname:focus,
-input.model-when:focus{
+input.model-when:focus {
   outline-offset: 0;
   -webkit-box-shadow: none;
   box-shadow: none;
@@ -313,7 +313,7 @@ input.model-when:focus{
 }
 
 g.zones rect {
-  stroke: black;
+  stroke: #333;
   fill: none;
 }
 
@@ -353,9 +353,18 @@ path.import {
   fill: green;
 }
 
-.model-dep path{
+.model-dep path {
   stroke: #333;
   stroke-width: 3px;
+}
+
+.model-chart path {
+  stroke: none;
+  /* fill: red; */
+}
+
+.model-chart .parent-chart {
+  opacity: 0.4;
 }
 
 .link {
@@ -492,14 +501,26 @@ path.import {
   /* IE10+ */
 }
 
-.hide-links-old .links-old{
-  display:none;
+.hide-links-old .links-old {
+  display: none;
 }
 
-.hide-links .links{
-  display:none;
+.hide-links .links {
+  display: none;
 }
 
-.hide-dep .model-dep path{
-  display:none;
+.hide-dep .model-dep path {
+  display: none;
+}
+
+.hide-chart .model-chart {
+  display: none;
+}
+
+.change-type-i {
+  fill: green;
+}
+
+.change-type-d {
+  fill: red;
 }
