@@ -23,7 +23,7 @@ angular.module('bmlayersApp')
 		showLinks: true,
 		showLinksOld: true,
 		showDep: true,
-		showChart: true
+		showChart: false
     };
     
     /*
