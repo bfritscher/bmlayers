@@ -37,39 +37,88 @@ angular.module('bmlayersApp')
       scope.$watch('data', function(){draw();}, true);
 	  scope.$watch('options', function(){draw();}, true);
       
-      /* transition via zoom
-      var width = 1280, height = 800;
-      function transition(svg, start, end) {
-        var center = [width / 2, height / 2],
-            i = d3.interpolateZoom(start, end);
+/*
+      function transitionToModel(model) {
+		
+		var width = svg.node().parentNode.width.baseVal.value;
+		var height = svg.node().parentNode.height.baseVal.value;
+		var start = zoom.translate().concat(zoom.scale());
+		var end = [model.x(), model.y(), zoom.scale()];
+        var center = [0, 0],
+            i = d3.interpolate(start, end);
 
         svg.attr("transform", transform(start))
         .transition()
         .duration(i.duration)
         .attrTween("transform", function() { return function(t) { return transform(i(t)); }; })
-        .each("end", function() { d3.select(this).call(transition, end, start); });
+		.each('end', function(){
+			scope.$apply(function(){
+				scope.options.transitionTo = undefined;
+			});
+			
+		});
 
         function transform(p) {
-          var k = height / p[2];
+          var k = p[2];
           return "translate(" + (center[0] - p[0] * k) + "," + (center[1] - p[1] * k) + ")scale(" + k + ")";
         }
       }
-      var p0 = [0, 0, 300],
-        p1 = [600, 100, 300];
-      svg.call(transition, p0, p1);
-      */
+*/
          
       function draw(){
 		console.log('draw');
+		var svg = d3.select(elem[0]).select('g');
 		
-        var svg = d3.select(elem[0]).select('g');
+		var line = d3.svg.line()
+			.interpolate('cardinal')
+			.x(function(d){return d.x;})
+			.y(function(d){return d.y;});
+		
+		var lineFlat = d3.svg.line()
+			.x(function(d){return d.x;})
+			.y(function(d){return d.y;});
+		
+		
+		if(scope.options.transitionTo){			
+			var m = scope.models[scope.options.transitionTo];
+			//zoom.translate([-m.x()*zoom.scale(), -m.y()*zoom.scale()]);
+			scope.options.transitionTo = undefined;
+			//svg.attr("transform", "translate(" + (-m.x()*zoom.scale()) +',' + (-m.y()*zoom.scale()) + ")scale(" + zoom.scale() + ")");
+		}
+		
+        
 		svg.classed('hide-links', !scope.options.showLinks);
 		svg.classed('hide-links-old', !scope.options.showLinksOld);
+		svg.classed('hide-dep', !scope.options.showDep);
                 
         //Model
         var model = svg.selectAll('g.model').data(d3.map(scope.models).entries(), function(d){return d.key;});
         var modelEnter = model.enter().append('g')
           .attr('class', 'model');
+        
+        var modelDepEnter = modelEnter.append('g')
+        .attr('class', 'model-dep')
+		modelDepEnter.append('path')
+		.attr('class', 'children');
+		modelDepEnter.append('path')
+		.attr('class', 'parent');
+		model.selectAll('.model-dep path.children').attr('d', function(d){
+			var m = d.value;
+			if(m.children.length > 1){
+				var to = m.children[m.children.length-1];
+				return lineFlat([{x:m.width/2, y:m.height+m.rowSpacing},{x:m.width/2, y: to.y()-m.y() + (to.height/2)}]);
+			}
+		});
+        model.selectAll('.model-dep path.parent').attr('d', function(d){
+			var m = d.value;
+			if(m.parent && m.parent.children.indexOf(m) > 0){
+				var diff = scope.options.showDiff? m.width: 0;
+				return lineFlat([{x:m.parent.x()-m.x()+(m.parent.width/2), y:m.height/2},{x:-m.colSpacing-diff, y: m.height/2}]);
+			}else{
+				return "M0,0";
+			}
+		});
+        
         
 		//create model MENU
         var modelMenuEnter = modelEnter.append('g')
@@ -116,15 +165,7 @@ angular.module('bmlayersApp')
 		linkEnter.append('path')
 		.attr("marker-end", "url(#arrowhead)");
 		
-		var line = d3.svg.line()
-			.interpolate('cardinal')
-			.x(function(d){return d.x;})
-			.y(function(d){return d.y;});
-		
-		var lineFlat = d3.svg.line()
-			.x(function(d){return d.x;})
-			.y(function(d){return d.y;});
-		
+
 		function updateLink(link){
           link.select('path').attr('d', function(d){
               return line(d.value.points);
@@ -185,10 +226,10 @@ angular.module('bmlayersApp')
 			function(d){
 				var model = d3.select(this.parentNode).datum().value;
 				scope.$apply(function(){  
-					if(scope.editModel && scope.editModel.id  === model.id){
-						scope.editModel = undefined;
+					if(scope.options.editModelID === model.id){
+						scope.options.editModelID = undefined;
 					}else{
-						scope.editModel = model;
+						scope.options.editModelID = model.id;
 					}
 				});
 					
@@ -212,6 +253,7 @@ angular.module('bmlayersApp')
 							  x: pos[0],
 							  y: pos[1]
 							};
+							scope.options.editElementID = id;
 						  });
 					  }
 			});
@@ -235,8 +277,8 @@ angular.module('bmlayersApp')
 		.attr('class', 'link new')
         linkEnter.each(function(d){
           var l = d3.select(this);
-          scope.$watch('editLink', function(){
-            l.classed('edit', scope.editLink && d.value.id === scope.editLink.id);
+          scope.$watch('options.editLinkID', function(){
+            l.classed('edit', scope.options.editLinkID === d.value.id);
           })
         });
         
@@ -247,15 +289,15 @@ angular.module('bmlayersApp')
 		onClickAndDblClick(path, 
 			function(d){
 			  scope.$apply(function(){
-				if(scope.editLink && scope.editLink.id === d.value.id){
-				  scope.editLink = undefined;
+				if(scope.options.editLinkID === d.value.id){
+				  scope.options.editLinkID = undefined;
 				}else{
-				  scope.editLink = d.value;
+				  scope.options.editLinkID = d.value.id;
 				}
 			  });
 			},
 			function(d){
-				if(scope.editLink && scope.editLink.id === d.value.id){
+				if(scope.options.editLinkID === d.value.id){
 					var cursor = d3.mouse(this);
 					var point = {x: cursor[0], y: cursor[1]};
 					var getInsertLocation = function(){
@@ -435,10 +477,10 @@ angular.module('bmlayersApp')
 		  if(Math.abs(scope.data.elements[d.key].x-d.__origin__[0]) < 2 && Math.abs(scope.data.elements[d.key].y-d.__origin__[1]) <2)	{
 			//simulate element click
 			scope.$apply(function(){
-			  if(scope.editElement && scope.editElement.id === d.value.id){
-				scope.editElement = undefined;
+			  if(scope.options.editElementID === d.value.id){
+				scope.options.editElementID = undefined;
 		      }else{
-				scope.editElement = d.value;
+				scope.options.editElementID = d.value.id;
 			  }
 			});
 		  }else{

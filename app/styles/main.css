@@ -353,6 +353,11 @@ path.import {
   fill: green;
 }
 
+.model-dep path{
+  stroke: #333;
+  stroke-width: 3px;
+}
+
 .link {
   stroke: rgb(255, 255, 153);
   stroke-width: 10px;
@@ -492,5 +497,9 @@ path.import {
 }
 
 .hide-links .links{
+  display:none;
+}
+
+.hide-dep .model-dep path{
   display:none;
 }

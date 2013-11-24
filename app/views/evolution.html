@@ -1,57 +1,59 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" evolution></svg>
-<div id="rightmenu" ng-show="editLink || editModel || editElement">
-    <div ng-show="editElement" class="editElement">
-        <button ng-click="editElement=undefined" class="close">&times;</button>
+<div id="rightmenu" ng-show="options.editLinkID || options.editModelID || options.editElementID">
+    <div ng-show="options.editElementID" class="editElement">
+        <button ng-click="options.editElementID=undefined" class="close">&times;</button>
         <h2>Element</h2>
-        <p>id: {{editElement.id}}</p>
-        <p>type: {{editElement.data.type}}</p>
-		<p ng-show="editElement.parent">parent: {{editElement.parent.model.data.name}}#{{editElement.parent.data.name}}
-		<span ng-show="editElement.model.getParents().indexOf(editElement.parent.model.id) < 0">Import!</span>
+        <p>id: {{options.editElementID}}</p>
+        <p>type: {{elements[options.editElementID].data.type}}</p>
+		<p ng-show="elements[options.editElementID].parent">parent: {{elements[options.editElementID].parent.model.data.name}}#{{elements[options.editElementID].parent.data.name}}
+		<span ng-show="elements[options.editElementID].getParents().indexOf(elements[options.editElementID].parent.model.id) < 0">Import!</span>
 		</p>
-        <p ng-hide="editElement.data.type == 'D'">name: <input type="text" ng-model="data.elements[editElement.id].name" /></p>
-        <div ng-hide="editElement.data.type == 'D'" class="tags">
-	       <div ng-repeat="t in data.tags" class="tag" ng-class="{hidden: data.elements[editElement.id].tags.indexOf(t.id) < 0}"
-            style="background-color:{{t.color}};" title="{{t.name}}" ng-click="editElement.toggleTag(t, $event)"></div>
+        <p ng-hide="elements[options.editElementID].data.type == 'D'">name: <input type="text" ng-model="data.elements[options.editElementID].name" /></p>
+        <div ng-hide="elements[options.editElementID].data.type == 'D'" class="tags">
+	       <div ng-repeat="t in data.tags" class="tag" ng-class="{hidden: data.elements[options.editElementID].tags.indexOf(t.id) < 0}"
+            style="background-color:{{t.color}};" title="{{t.name}}" ng-click="elements[options.editElementID].toggleTag(t, $event)"></div>
 		</div>
         
-        <p><button ng-click="editElement.handleDelete()" class="btn btn-danger">delete element</button></p>
+        <p><button ng-click="elements[options.editElementID].handleDelete()" class="btn btn-danger">delete element</button></p>
     </div>
-    <div ng-show="editLink">
-        <button ng-click="editLink=undefined" class="close">&times;</button>
+    <div ng-show="options.editLinkID">
+        <button ng-click="options.editLinkID=undefined" class="close">&times;</button>
         <h2>Mechanic</h2>
-        <p>from: {{elements[editLink.from].id}}</p>
-        <p>to: {{elements[editLink.to].id}}</p>
-        <p>color: <input type="text" ng-model="data.links[editLink.id].color" />
+        <p>from: {{data.elements[data.links[options.editLinkID].from].name}}</p>
+        <p>to: {{data.elements[data.links[options.editLinkID].to].name}}</p>
+        <p>color: <input type="text" ng-model="data.links[options.editLinkID].color" />
         </p>
         <div class="tags">
-	       <div ng-repeat="t in data.tags" class="tag" ng-class="{hidden: data.links[editLink.id].color != t.color}"
-            style="background-color:{{t.color}};" ng-click="data.links[editLink.id].color=t.color"></div>
+	       <div ng-repeat="t in data.tags" class="tag" ng-class="{hidden: data.links[options.editLinkID].color != t.color}"
+            style="background-color:{{t.color}};" ng-click="data.links[options.editLinkID].color=t.color"></div>
 		</div>
-        <p>width: s m l <input type="text" ng-model="data.links[editLink.id].width" /></p>
-        <p>style: line dash <input type="text" ng-model="data.links[editLink.id].dash" /></p>
+        <p>width: s m l <input type="text" ng-model="data.links[options.editLinkID].width" /></p>
+        <p>style: line dash <input type="text" ng-model="data.links[options.editLinkID].dash" /></p>
         <p><button ng-click="deleteLink()" class="btn btn-danger">delete link</button></p>
     </div>
-    <div ng-show="editModel">
-        <button ng-click="editModel=undefined" class="close">&times;</button>
+    <div ng-show="options.editModelID">
+        <button ng-click="options.editModelID=undefined" class="close">&times;</button>
         <h2>Business Model</h2>
-        <p>name: <input type="text" ng-model="data.models[editModel.id].name" /></p>
-        <p>dname: <input type="text" ng-model="data.models[editModel.id].dname" ng-disabled="!editModel.parent"/></p>
-        <p>when: <input type="text" ng-model="data.models[editModel.id].when" /></p>
-        <p>color: <input type="text" ng-model="data.models[editModel.id].color" /></p>
+        <p>name: <input type="text" ng-model="data.models[options.editModelID].name" /></p>
+        <p>dname: <input type="text" ng-model="data.models[options.editModelID].dname" ng-disabled="!models[options.editModelID].parent"/></p>
+        <p>parent: {{models[options.editModelID].parent.data.name}}</p>
+        <p>when: <input type="text" ng-model="data.models[options.editModelID].when" /></p>
+        <p>color: <input type="text" ng-model="data.models[options.editModelID].color" /></p>
         <div class="tags">
-	       <div ng-repeat="t in data.tags" class="tag" ng-class="{hidden: data.models[editModel.id].color != t.color}"
-            style="background-color:{{t.color}};" ng-click="data.models[editModel.id].color=t.color"></div>
+	       <div ng-repeat="t in data.tags" class="tag" ng-class="{hidden: data.models[options.editModelID].color != t.color}"
+            style="background-color:{{t.color}};" ng-click="data.models[options.editModelID].color=t.color"></div>
 		</div>
-        <p>row: {{editModel.row}}, column: {{editModel.column}}</p>
-        <p>fix column: <input type="text" class="span1" ng-model="data.models[editModel.id].c" /></p>
-        <p><button ng-click="editModel.addStep()" class="btn btn-primary">add step</button></p>
-        <p><button ng-click="editModel.handleDelete()" class="btn btn-danger">delete step</button></p>
-		<p ng-hide="!editModel.parent"><button ng-click="data.models[editModel.id].p=undefined" class="btn btn-warning">make orphan</button></p>
+        <p>row: {{models[options.editModelID].row}}, column: {{models[options.editModelID].column}}</p>
+        <p>fix column: <input type="text" class="span1" ng-model="data.models[options.editModelID].c" /></p>
+        <p><button ng-click="models[options.editModelID].addStep()" class="btn btn-primary">add step</button></p>
+        <p><button ng-click="models[options.editModelID].handleDelete()" class="btn btn-danger">delete step</button></p>
+		<p ng-hide="!models[options.editModelID].parent"><button ng-click="data.models[options.editModelID].p=undefined" class="btn btn-warning">make orphan</button></p>
 		<textarea ng-model="importJsonSrc" placeholder="JSON"></textarea>
-    	<button class="btn" ng-click="editModel.importJSON()">Import</button>
+    	<button class="btn" ng-click="models[options.editModelID].importJSON()">Import</button>
 		<h3>Global</h3>
 		<p>show diff: <input type="checkbox" ng-model="options.showDiff"/></p>
 		<p>show links: <input type="checkbox" ng-model="options.showLinks"/></p>
 		<p>show previous links: <input type="checkbox" ng-model="options.showLinksOld"/></p>
+		<p>show dep links: <input type="checkbox" ng-model="options.showDep"/></p>
     </div>
 </div>

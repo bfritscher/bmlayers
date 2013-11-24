@@ -21,7 +21,8 @@ angular.module('bmlayersApp')
     $scope.options ={
 		showDiff: true,
 		showLinks: true,
-		showLinksOld: true
+		showLinksOld: true,
+		showDep: true
     };
     
     /*
@@ -48,15 +49,15 @@ angular.module('bmlayersApp')
 	*/
 
 	$scope.deleteLink = function(){
-		if($scope.editLink)	{
-			delete $scope.data.links[$scope.editLink.id];
+		if($scope.options.editLinkID)	{
+			delete $scope.data.links[$scope.options.editLinkID];
 			for(var id in $scope.models){
-				delete $scope.models[id].links[$scope.editLink.id];
+				delete $scope.models[id].links[$scope.options.editLinkID];
 			}
 			for(var id in $scope.elements){
-				delete $scope.elements[id].links[$scope.editLink.id];
+				delete $scope.elements[id].links[$scope.options.editLinkID];
 			}
-			$scope.editLink = undefined;
+			$scope.options.editLinkID = undefined;
 		}
 	};
 	
@@ -347,7 +348,7 @@ angular.module('bmlayersApp')
 				}
 				delete $scope.data.elements[this.id];
 				delete $scope.elements[this.id];
-				$scope.editElement = undefined;
+				$scope.options.editElementID = undefined;
 				return true;
 			}else{
 				alert('cannot delete, has children: ' + this.children.map(function(e){return e.model.id + '#'+ e.id;}).join(', '));
@@ -489,7 +490,7 @@ angular.module('bmlayersApp')
 				if(canDelete){
 					delete $scope.data.models[this.id];
 					delete $scope.models[this.id];
-					$scope.editModel = undefined;
+					$scope.options.editModelID = undefined;
 					return true;
 				}else{
 					//TODO better error
@@ -504,6 +505,8 @@ angular.module('bmlayersApp')
 	this.addStep = function(){
 		var id = uuid4.generate();
 		$scope.data.models[id] = {id: id, p: this.id};
+		$scope.options.editModelID = id;
+		$scope.options.transitionTo = id;
 	};
 	
 	this.importJSON = function(){
