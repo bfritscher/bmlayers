@@ -421,6 +421,7 @@ angular.module('bmlayersApp')
 	  */
 	  this.data = obj;
 	  
+	  this.showOld = false;
       this.children = [];
       this.elements = {};
 	  this.links = {};
@@ -486,7 +487,7 @@ angular.module('bmlayersApp')
 		for(var id in this.elements){
 			var element = this.elements[id];
 			//only add link if connected elements not deleted in this model
-			if('D' === element.type){
+			if('D' === element.data.type){
 				for(var lid in element.allLinks()){
 					delete links[lid];
 				}

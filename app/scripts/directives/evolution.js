@@ -400,6 +400,7 @@ angular.module('bmlayersApp')
           
         //model update
         model.attr('transform', function(m){return 'translate(' + m.value.x() + ',' + m.value.y() + ')';});
+        model.classed('show-old', function(m){return m.value.showOld;});
         
         //modelDiff boxes
 		if(scope.options.showDiff){
@@ -609,7 +610,7 @@ angular.module('bmlayersApp')
 				  .attr('style', function(d){return 'width:' + d.value.width + 'px;height:' + d.value.height + 'px' ;})
 				  .html(function(d){
 					  return '<div class="svgelement" style="{{elementStyle(data.elements[\'' + d.key + '\'])}}">'
-					  + '<span>{{data.elements[\'' + d.key + '\'].name}} {{data.elements[\'' + d.key + '\'].type}}</span></div>';
+					  + '<span>{{data.elements[\'' + d.key + '\'].name}}</span></div>';
 				  })
 				  .each(function(d){
 					 $compile(this)(scope);

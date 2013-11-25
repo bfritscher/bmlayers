@@ -325,9 +325,11 @@ g.zones g.diff rect {
   fill: none;
 }
 
+.show-old .old{
+  opacity: 1;
+}
+
 .old {
-  /* background-color: blue; */
-  /* color: red; */
   opacity: 0.4;
 }
 
