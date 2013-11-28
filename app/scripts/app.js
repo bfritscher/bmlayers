@@ -1,7 +1,7 @@
 'use strict';
 angular.module('LocalStorageModule').value('prefix', 'bmlayers');
 angular.module('bmlayersApp',
-  ['ui.bootstrap', 'LocalStorageModule', 'ngRoute', 'firebase', 'uuid4'])
+  ['ui.bootstrap', 'LocalStorageModule', 'ngRoute', 'firebase', 'uuid4','omr.angularFileDnD'])
 .config(function ($routeProvider) {
   $routeProvider
   .when('/main', {

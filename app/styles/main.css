@@ -481,6 +481,10 @@ path.import {
   -webkit-box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 2px 0px;
   box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 2px 0px;
   background-image: -webkit-linear-gradient(top, rgb(255, 255, 127) 0%, rgb(255, 255, 153) 50%, rgb(255, 255, 188) 94%);
+  background-repeat: no-repeat;
+  -webkit-background-size: contain;
+  background-size: contain;
+  background-position: 50% 50%;
 }
 
 .svgelement span {
@@ -490,6 +494,13 @@ path.import {
   font-weight: 700;
   font-family: 'Patrick Hand', cursive;
   font-size: 20px;
+}
+
+.svgelement.image span{
+  vertical-align: bottom;
+  text-align: right;
+  font-size: 10px;
+  padding-right: 2px;
 }
 
 .no_selection,
@@ -526,4 +537,15 @@ path.import {
 
 .change-type-d {
   fill: red;
+}
+
+.dropzone{
+  padding: 20px;
+  text-align:center;
+  font-style: italic;
+  border: 1px dashed #333;
+  margin: 10px;
+  background-position: 50%, 50%;
+  background-size: contain;
+  background-repeat: no-repeat;
 }

@@ -134,17 +134,25 @@ angular.module('bmlayersApp')
         }
       }
     }
-    var styles = 'background: linear-gradient(135deg',
+    var styles = 'background-image:',
     increment = element.tags.length -1 > 0 ? 100 / (element.tags.length -1) : 0;
-    element.tags.forEach(function(id, index){
-      var offset = index * increment;
-      styles +=',' + hexToRgba(tagById(id).color, 0.8) + ' ' + offset + '%';
-    });
-    if(element.tags.length === 1){
-      styles += ',' + hexToRgba(tagById(element.tags[0]).color, 0.8) + ' 100%';
+    if(element.image){
+      styles+='url(' + element.image + ')';
     }
-    styles +=');';
-    
+    if(element.tags.length > 0){
+      if(element.image){
+        styles+=',';
+      }
+      styles += 'linear-gradient(135deg'
+      element.tags.forEach(function(id, index){
+        var offset = index * increment;
+        styles +=',' + hexToRgba(tagById(id).color, 0.8) + ' ' + offset + '%';
+      });
+      if(element.tags.length === 1){
+        styles += ',' + hexToRgba(tagById(element.tags[0]).color, 0.8) + ' 100%';
+      }
+      styles +=');';
+    }
     return styles;
   }
     //scale?

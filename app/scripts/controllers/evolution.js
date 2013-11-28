@@ -25,6 +25,16 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
     showDep: true,
     showChart: false
   };
+  
+  $scope.copy = function(){
+    var name = prompt('new name', $routeParams.projectid);
+    if(name){
+      var ref = new Firebase('https://bm.firebaseio.com/projects/' + name);
+      angularFire(ref, $scope, 'datacopy').then(function(){
+        $scope.datacopy = $scope.data;
+      });
+    }
+  };
     
   /*
   $scope.data = {
@@ -60,6 +70,18 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
         delete $scope.elements[id].links[$scope.options.editLinkID];
       }
       $scope.options.editLinkID = undefined;
+    }
+  };
+  
+  $scope.invertLink = function(){
+    var link = $scope.data.links[$scope.options.editLinkID];
+    if(link)  {
+      var from = link.from ;
+      link.from = link.to;
+      link.to = from;
+      var toPoint = link.points.pop();
+      link.points.push(link.points.shift());
+      link.points.unshift(toPoint);
     }
   };
   
@@ -148,7 +170,7 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
         model.links = {};
         delete model.parent;
       }
-      for(id in $scope.models){
+      for(id in $scope.data.models){
         model = $scope.models[id];
         if(model.data.p){
           parent = $scope.models[model.data.p];
@@ -172,7 +194,7 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
       }
       
       //Element obj gets linked
-      for(id in $scope.elements){
+      for(id in $scope.data.elements){
         e = $scope.elements[id];
         if(e.data.p){
           parent = $scope.elements[e.data.p];
@@ -198,7 +220,7 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
           if(!l.getPoints){
             l.getPoints = getPoints;
           }
-          if(!l.points){
+          if(!l.points || l.points.length < 2){
             l.points = l.getPoints();
           }
           for(var i=0; i < l.points.length; i++){

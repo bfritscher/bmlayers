@@ -17,7 +17,12 @@
 		<input type="radio" ng-model="data.elements[options.editElementID].changeType" value="" /> ?
       	<input type="radio" ng-model="data.elements[options.editElementID].changeType" value="i" /> ++
       	<input type="radio" ng-model="data.elements[options.editElementID].changeType" value="d" /> --</p>
-        
+		<p>note: <textarea ng-model="data.elements[options.editElementID].note"></textarea></p>
+        <div class="dropzone" 
+			ng-style="{'background-image': 'url('+ data.elements[options.editElementID].image +')'}"
+			file-dropzone="[image/png, image/jpeg, image/gif]" file="data.elements[options.editElementID].image" data-max-file-size="3">
+			image drop
+		</div>
         <p><button ng-click="elements[options.editElementID].handleDelete()" class="btn btn-danger">delete element</button></p>
     </div>
     <div ng-show="options.editLinkID">
@@ -33,6 +38,8 @@
 		</div>
         <p>width: s m l <input type="text" ng-model="data.links[options.editLinkID].width" /></p>
         <p>style: line dash <input type="text" ng-model="data.links[options.editLinkID].dash" /></p>
+		<p>note: <textarea ng-model="data.links[options.editLinkID].note"></textarea></p>
+        <p><button ng-click="invertLink()" class="btn btn-primary">invert link</button></p>
         <p><button ng-click="deleteLink()" class="btn btn-danger">delete link</button></p>
     </div>
     <div ng-show="options.editModelID">
@@ -47,6 +54,7 @@
 	       <div ng-repeat="t in data.tags" class="tag" ng-class="{hidden: data.models[options.editModelID].color != t.color}"
             style="background-color:{{t.color}};" ng-click="data.models[options.editModelID].color=t.color"></div>
 		</div>
+		<p>note: <textarea ng-model="data.models[options.editModelID].note"></textarea></p>
         <p>row: {{models[options.editModelID].row}}, column: {{models[options.editModelID].column}}</p>
         <p>fix column: <input type="text" class="span1" ng-model="data.models[options.editModelID].c" /></p>
         <p><button ng-click="models[options.editModelID].addStep()" class="btn btn-primary">add step</button></p>

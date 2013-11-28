@@ -424,7 +424,7 @@ angular.module('bmlayersApp')
             .attr('xmlns', 'http://www.w3.org/1999/xhtml')
             .attr('style', function(d){return 'width:' + d.value.width + 'px;height:' + d.value.height + 'px' ;})
             .html(function(d){
-              return '<div class="svgelement" style="{{elementStyle(data.elements[\'' + d.key + '\'])}}">' +
+              return '<div class="svgelement" ng-class="{image:data.elements[\'' + d.key + '\'].image}" style="{{elementStyle(data.elements[\'' + d.key + '\'])}}">' +
               '<span>{{data.elements[\'' + d.key + '\'].name}}</span></div>';
             })
             .each(function(){
@@ -678,8 +678,10 @@ angular.module('bmlayersApp')
             }
             while(!(type===null || type === 'C' || type === 'D'));
             if(type){
+              var image, name;
               if(type==='C'){
-                var name = prompt('new name?', d.value.data.name);
+                name = prompt('new name?', d.value.data.name);
+                image = d.value.data.image;
               }
               scope.$apply(function(){
                 var id = uuid4.generate();
@@ -692,7 +694,8 @@ angular.module('bmlayersApp')
                   x: d.value.data.x,
                   y: d.value.data.y,
                   zone: d.value.data.zone,
-                  tags: angular.copy(d.value.data.tags)
+                  tags: angular.copy(d.value.data.tags),
+                  image: image
                 };
                 scope.options.editElementID = id;
               });
