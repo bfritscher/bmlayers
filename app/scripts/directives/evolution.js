@@ -3,9 +3,61 @@
 angular.module('bmlayersApp')
 .directive('evolution', ['$filter', 'uuid4', '$compile', '$timeout', function($filter, uuid4, $compile, $timeout) {
   return function(scope, elem) {
+
+  
+    $(document.body).bind('keydown', function(event){
+       var key = event.keyCode;
+       var el = event.target;
+       var type = el.tagName.toLowerCase();
+       if (type === "input" || type === "textarea") { return; }
+       //TODO: cleanup
+       scope.$apply(function(){
+           var r = scope.focusedModel.row;
+           var c = scope.focusedModel.column;
+           if(39 === key && scope.focusedModel.children.length > 0){ //right
+               scope.options.transitionTo = scope.focusedModel.children[0].id;
+           }
+           if(37 === key && scope.focusedModel.parent){ //left
+               scope.options.transitionTo = scope.focusedModel.parent.id;
+           }
+           if(38 === key){ //up
+            if(scope.rows[r-1]){
+              if(scope.rows[r-1].cols[c]){
+                scope.options.transitionTo = scope.rows[r-1].cols[c].id;
+              }else{
+                var i = scope.rows[r-1].cols.length-1;;
+                while(!scope.rows[r-1].cols[i]){
+                  i--;
+                }
+                scope.options.transitionTo = scope.rows[r-1].cols[i].id;
+              }
+            }
+               
+           }
+           if(40 === key){ //down
+            if(scope.rows[r+1]){
+              if(scope.rows[r+1].cols[c]){
+                scope.options.transitionTo = scope.rows[r+1].cols[c].id;
+              }else{
+                var i = scope.rows[r+1].cols.length-1;;
+                while(!scope.rows[r+1].cols[i]){
+                  i--;
+                }
+                scope.options.transitionTo = scope.rows[r+1].cols[i].id;
+              }
+            }
+           }
+       });
+       
+    });
+  
   
     function zoomed() {
-      svg.attr('transform', 'translate(' + d3.event.translate + ')scale(' + d3.event.scale + ')');
+      var obj = svg;
+      if(d3.event.sourceEvent === null){
+          obj = obj.transition().duration(1000);
+      }
+      obj.attr('transform', 'translate(' + d3.event.translate + ')scale(' + d3.event.scale + ')');
     }
   
     var zoom = d3.behavior.zoom()
@@ -87,10 +139,12 @@ angular.module('bmlayersApp')
       var area = d3.svg.area();
     
       if(scope.options.transitionTo){
-        //var m = scope.models[scope.options.transitionTo];
-        //zoom.translate([-m.x()*zoom.scale(), -m.y()*zoom.scale()]);
+        var m = scope.models[scope.options.transitionTo];
+        zoom.scale(document.documentElement.clientHeight/910);
+        zoom.translate([-m.x()*zoom.scale()+5, -m.y()*zoom.scale()+5]);
+        zoom.event(svg);
         scope.options.transitionTo = undefined;
-        //svg.attr('transform', 'translate(' + (-m.x()*zoom.scale()) +',' + (-m.y()*zoom.scale()) + ')scale(' + zoom.scale() + ')');
+        scope.focusedModel = m;
       }
       
       svg.classed('hide-links', !scope.options.showLinks);
@@ -269,26 +323,33 @@ angular.module('bmlayersApp')
           }
         });
       }, function(){
-        //ADD new element
         var model = d3.select(d3.event.target.parentElement).data()[0];
-        var zone = d3.select(d3.event.target).data()[0].value;
-        //TODO center on element?
-        var pos = d3.mouse(this);
-        var name = prompt('name?');
-        if(name){
-          scope.$apply(function(){
-            var id = uuid4.generate();
-            scope.data.elements[id] = {
-              id: id,
-              m: model.value.id,
-              name: name,
-              type: 'A',
-              zone: zone.name,
-              x: pos[0],
-              y: pos[1]
-            };
-            scope.options.editElementID = id;
-          });
+        if(zoom.scale() > 0.25){
+            //ADD new element
+            
+            var zone = d3.select(d3.event.target).data()[0].value;
+            //TODO center on element?
+            var pos = d3.mouse(this);
+            var name = prompt('name?');
+            if(name){
+              scope.$apply(function(){
+                var id = uuid4.generate();
+                scope.data.elements[id] = {
+                  id: id,
+                  m: model.value.id,
+                  name: name,
+                  type: 'A',
+                  zone: zone.name,
+                  x: pos[0],
+                  y: pos[1]
+                };
+                scope.options.editElementID = id;
+              });
+            }
+        }else{
+            $timeout(function(){
+                scope.options.transitionTo = model.value.id;
+            });
         }
       });
     

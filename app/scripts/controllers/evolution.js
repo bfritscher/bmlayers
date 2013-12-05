@@ -35,6 +35,10 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
       });
     }
   };
+  
+  $scope.handleKeyPress = function(e){
+    console.log(e);
+  };
     
   /*
   $scope.data = {
@@ -288,10 +292,11 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
     model.column = column;
     model.row = row;
     
-    //graph data
-    var rows = $scope.rows[row] || {y:model.y()+model.height+(model.rowSpacing()/2), color: model.getColor(),data:[]};
+    //graph Chart data generation
+    var rows = $scope.rows[row] || {y:model.y()+model.height+(model.rowSpacing()/2), color: model.getColor(),data:[], cols:[]};
     rows.data.push([model.x()-((($scope.showDiff ? model.width : 0) + model.colSpacing)/2), -model.height*Math.random()]);
     rows.data.push([model.x()+(model.width/2), -model.height*Math.random()]);
+    rows.cols[column] = model; //store grid represnetation to naviguate
     $scope.rows[row] = rows;
         
     for(var index=0; index < model.children.length; index++){
@@ -551,6 +556,9 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
           delete $scope.data.models[this.id];
           delete $scope.models[this.id];
           $scope.options.editModelID = undefined;
+          if(this.parent){
+            $scope.options.transitionTo = this.parent.id;
+          }
           return true;
         }else{
           //TODO better error
