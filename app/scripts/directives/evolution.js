@@ -623,9 +623,11 @@ angular.module('bmlayersApp')
                   scope.data.elements[d.key].x = scope.data.elements[d.key].x + oldzone.x - zone.x + oldModel.x() - model.value.x();
                   scope.data.elements[d.key].y = scope.data.elements[d.key].y + oldzone.y - zone.y + oldModel.y() - model.value.y();
                   scope.data.elements[d.key].zone = zone.name;
+                  /*
                   if(d.value.data.type === 'C'){
                     scope.data.elements[d.key].type = 'I';
                   }
+                  */
                 });
               }else{
                 if(d.value.data.type === 'A'){

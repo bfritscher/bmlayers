@@ -213,6 +213,21 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
         }
       }
       
+      //check C and I
+      for(id in $scope.data.elements){
+        e = $scope.elements[id];
+        if(e.parent){
+          var inModelChain = e.model.getParents().indexOf(e.parent.model.id) >=0;
+          if('I' === e.data.type && inModelChain){
+            e.data.type = 'C';
+          }
+          if('C' === e.data.type && !inModelChain){
+            e.data.type = 'I';
+          }
+        }
+
+      }
+      
       for(id in $scope.data.links){
         var l = $scope.data.links[id];
         if(typeof l === 'object'){
