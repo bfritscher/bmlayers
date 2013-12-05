@@ -568,7 +568,7 @@ angular.module('bmlayersApp')
             draw();
           });
         }
-        if(d.value.data.type === 'C'){
+        if(d.value.data.type === 'C' || d.value.data.type === 'I'){
           //hacks...
           d.value.data.x = d3.event.x;
           d.value.data.y = d3.event.y;
@@ -614,7 +614,7 @@ angular.module('bmlayersApp')
             }else{
               //only A can really be moved or C if to a new model not in parent => cross import
               //TODO BETTER WAY TO ID MODEL
-              if(model.value.constructor.name === 'Model' && model.value.id !== scope.data.elements[d.key].m && (d.value.data.type === 'A' || d.value.data.type === 'C')){
+              if(model.value.constructor.name === 'Model' && model.value.id !== scope.data.elements[d.key].m && (d.value.data.type === 'A' || d.value.data.type === 'C'|| d.value.data.type === 'I')){
                 var oldModel = scope.models[scope.data.elements[d.key].m];
                 //TODO: HANDLE DEPENDENCIES
                 //THIS only works if models have same zone positions
@@ -731,7 +731,7 @@ angular.module('bmlayersApp')
         element.attr('transform', function(d){
           if(d.value.data.type === 'A' || d.value.data.type === 'D'){
             return 'translate(' + (d.value.data.x || 0) + ',' + (d.value.data.y || 0) + ')';
-          }else if(d.value.data.type === 'C' && d.value.__dragging__){
+          }else if((d.value.data.type === 'I' || d.value.data.type === 'C') && d.value.__dragging__){
             //WTF bug??? d.value.x does not return updated value..
             return 'translate(' + (d.value.dragx || 0) + ',' + (d.value.dragy || 0) + ')';
           }else{
