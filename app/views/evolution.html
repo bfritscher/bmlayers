@@ -57,6 +57,7 @@
 		<p>note: <textarea ng-model="data.models[options.editModelID].note"></textarea></p>
         <p>row: {{models[options.editModelID].row}}, column: {{models[options.editModelID].column}}</p>
         <p>fix column: <input type="text" class="span1" ng-model="data.models[options.editModelID].c" /></p>
+        <p ng-show="!models[options.editModelID].parent"><select ng-model="data.models[options.editModelID].type" ng-options="key as value for (key,value) in {bmo:'Business Model Canvas', vpc:'Value Proposition Canvas'}"></select></p>
         <p><button ng-click="models[options.editModelID].addStep()" class="btn btn-primary">add step</button></p>
         <p><button ng-click="models[options.editModelID].handleDelete()" class="btn btn-danger">delete step</button></p>
 		<p ng-hide="!models[options.editModelID].parent"><button ng-click="data.models[options.editModelID].p=undefined" class="btn btn-warning">make orphan</button></p>

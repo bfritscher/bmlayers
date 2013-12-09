@@ -212,7 +212,15 @@ angular.module('bmlayersApp')
           return 'M0,0';
         }
       });
-                
+      
+      /*
+      modelEnter.append('rect')
+      .attr('class', 'model-background')
+      .attr('width', function(d){return d.value.width;})
+      .attr('height', function(d){return d.value.height;})
+      .attr('y', 0)
+      .attr('x', 0);
+      */
         
       //create model MENU
       var modelMenuEnter = modelEnter.append('g')
@@ -243,40 +251,7 @@ angular.module('bmlayersApp')
         $compile(this)(scope);
       });
       
-         
-      // DRAW OLD LINKS behind
-      var modelLinksEnter = modelEnter.append('g')
-      .attr('class', 'links-old')
-      .attr('transform', 'translate(0,0)');
-
-      var link = model.select('g.links-old').selectAll('g.link.old').data(function(d){
-        return d.value.parent ? d3.map(d.value.parent.allLinks()).entries() : [];
-      }, function(d){ return d.key;});
-      
-      var linkEnter = link.enter().append('g')
-      .attr('class', 'link old');
-      
-      linkEnter.append('path')
-      .attr('marker-end', 'url(#arrowhead)');
-
-      function updateLink(link){
-        link.select('path').attr('d', function(d){
-          return line(d.value.points);
-        })
-        .attr('stroke', function(d){
-          return d.value.color;
-        })
-        .attr('stroke-width', function(d){
-          return d.value.width;
-        })
-        .attr('stroke-dasharray', function(d){
-          return d.value.dash;
-        });
-      }
-      updateLink(link);
-      
-      link.exit().remove();
-          
+                   
           
       //Create ZONES
       modelEnter.append('g')
@@ -308,11 +283,12 @@ angular.module('bmlayersApp')
         });
       }
       
-      var rect = zoneEnter.append('rect')
+      var rect = zoneEnter.append('path')
       .attr('x', 0)
       .attr('y', 0)
-      .attr('width', function(d){ return d.value.width;})
-      .attr('height', function(d){ return d.value.height;});
+      .attr('d', function(d){ return d.value.path;});
+      //.attr('width', function(d){ return d.value.width;})
+      //.attr('height', function(d){ return d.value.height;});
       onClickAndDblClick(rect, function(){
         var model = d3.select(this.parentNode).datum().value;
         scope.$apply(function(){
@@ -359,6 +335,39 @@ angular.module('bmlayersApp')
       .text(function(d){
         return $filter('i18n')(d.value.name);
       });
+      
+      // DRAW OLD LINKS behind
+      var modelLinksEnter = modelEnter.append('g')
+      .attr('class', 'links-old')
+      .attr('transform', 'translate(0,0)');
+
+      var link = model.select('g.links-old').selectAll('g.link.old').data(function(d){
+        return d.value.parent ? d3.map(d.value.parent.allLinks()).entries() : [];
+      }, function(d){ return d.key;});
+      
+      var linkEnter = link.enter().append('g')
+      .attr('class', 'link old');
+      
+      linkEnter.append('path')
+      .attr('marker-end', 'url(#arrowhead)');
+
+      function updateLink(link){
+        link.select('path').attr('d', function(d){
+          return line(d.value.points);
+        })
+        .attr('stroke', function(d){
+          return d.value.color;
+        })
+        .attr('stroke-width', function(d){
+          return d.value.width;
+        })
+        .attr('stroke-dasharray', function(d){
+          return d.value.dash;
+        });
+      }
+      updateLink(link);
+      
+      link.exit().remove();
     
         
       //DRAW new links

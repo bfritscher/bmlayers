@@ -102,12 +102,12 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
   $scope.models = {};
   $scope.elements = {};
 
-  function getPoints(){
+  function getPoints(type){
     var elementFrom = $scope.data.elements[this.from];
     var elementTo = $scope.data.elements[this.to];
     if(elementFrom && elementTo){
-      var zoneFrom = zones[elementFrom.zone];
-      var zoneTo = zones[elementTo.zone];
+      var zoneFrom = zones[type][elementFrom.zone];
+      var zoneTo = zones[type][elementTo.zone];
       return [{x: zoneFrom.x + elementFrom.x || 0 , y: zoneFrom.y + elementFrom.y || 0 },
             {x: zoneTo.x + elementTo.x || 0 , y: zoneTo.y + elementTo.y || 0 }];
     }else{
@@ -212,8 +212,8 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
           model.elements[e.id] = e;
           e.model = model;
         }
-        if(zones[e.data.zone]){
-          e.zoneObj = zones[e.data.zone];
+        if(zones[model.getType() || 'bmc'][e.data.zone]){
+          e.zoneObj = zones[model.getType() || 'bmc'][e.data.zone];
         }
       }
       
@@ -235,12 +235,17 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
       for(id in $scope.data.links){
         var l = $scope.data.links[id];
         if(typeof l === 'object'){
+          //FIIXusing augmented Model
+          var elementFrom = $scope.elements[l.from];
+          var elementTo = $scope.elements[l.to];
+          
+          
           l.id = id;
           if(!l.getPoints){
             l.getPoints = getPoints;
           }
           if(!l.points || l.points.length < 2){
-            l.points = l.getPoints();
+            l.points = l.getPoints(elementFrom.model.getType() || 'bmc'); //FIXME get right type
           }
           for(var i=0; i < l.points.length; i++){
             if(!l.points[i]){
@@ -250,12 +255,10 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
           //bounding boxes
           //TODO XXX BIG REFACTOR also with DRAG, renaming points vs l.points not same!!
           var index = 0;
-          var points = l.getPoints();
+          var points = l.getPoints(elementFrom.model.getType() || 'bmc');
           var margin = 5;
           var margin2 = 16;
-          //FIIXusing augmented Model
-          var elementFrom = $scope.elements[l.from];
-          var elementTo = $scope.elements[l.to];
+          
           if(elementFrom && elementTo){
             l.points[0].x = Math.max(points[index].x - margin, Math.min(points[index].x + elementFrom.width + margin, l.points[0].x));
             l.points[0].y = Math.max(points[index].y - margin, Math.min(points[index].y + elementFrom.height + margin, l.points[0].y));
@@ -277,6 +280,12 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
       var row = 0;
       $scope.rows = [];
       for(var key in $scope.models){
+        //Update model type
+        var type = $scope.models[key].getType();
+        if(type === 'vpc'){
+          $scope.models[key].zones = zones[type];
+          $scope.models[key].height = $scope.models[key].width/2;
+        }
         if(!$scope.models[key].parent){
           row = calculatePosition($scope.models[key], 0, row);
         }
@@ -307,14 +316,54 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
     
   //Object wrapper and defaults
   var mWidth = 1280;
-  var mHeight = 900;
+  var mHeight = mWidth/2;
   var eWidth = mWidth / 5 * 0.39;
   var eHeight = eWidth / 9 * 8;
   var rowSpacing = 1000;
   var colSpacing = 300;
-    
   var zones = {
-    /*jshint camelcase: false */
+    vpc: {
+      gain_creator:{
+        x: 0,
+        y: 0,
+        path: 'M 0,0 ' + mWidth/2 + ',0 ' + mWidth/2 + ',' + mHeight/2 + ' ' + mWidth/4 + ',' + mHeight/2 +' z',
+        name: 'gain_creator'
+      },
+      pain_reliever:{
+        x: 0,
+        y: 0,
+        path: 'M 0,' + mHeight + ' ' + mWidth/2 + ',' + mHeight + ' ' + mWidth/2 + ',' + mHeight/2 + ' ' + mWidth/4 +',' + mHeight/2 + ' z',
+        name: 'pain_reliever'
+      },
+      features:{
+        x: 0,
+        y: 0,
+        path: 'M 0,0 0,' + mHeight + ' ' + mWidth/4 + ',' + mHeight/2 + ' z',
+        name: 'features'
+      },
+      jobs:{
+        x: mWidth/2,
+        y: 0,
+        path: 'M ' + mWidth/4 + ',' + mHeight/2 + ' ' + (1+Math.cos(45)) * mWidth/4 + ',' + (mHeight/2 -(Math.sin(45)*mWidth/4)) + ' a ' + mWidth/4 + ',' + mHeight/2 + ' 0 0,1 0,' + (mHeight - 2* (mHeight/2 -(Math.sin(45)*mWidth/4)))  + ' z',
+        name: 'jobs'
+      },
+      gain:{
+        x: mWidth/2,
+        y: 0,
+        path: 'M 0,' + mHeight/2 + ' ' + mWidth/4 + ',' + mHeight/2 + ' ' + (1+Math.cos(45)) * mWidth/4 + ',' + (mHeight/2 -(Math.sin(45)*mWidth/4)) + ' a ' + mWidth/4 + ',' + mHeight/2 + ' 0 0,0 -' + (1+Math.cos(45)) * mWidth/4  + ',' + (mHeight/2 -(mHeight/2 -(Math.sin(45)*mWidth/4))) + ' z',
+        name: 'gain'
+      },
+      pain:{
+        x: mWidth/2,
+        y: 0,
+        path: 'M 0,' + mHeight/2 + ' ' + mWidth/4 + ',' + mHeight/2 + ' ' + (1+Math.cos(45)) * mWidth/4 + ',' + (mHeight -(mHeight/2 -(Math.sin(45)*mWidth/4))) + ' a ' + mWidth/4 + ',' + mHeight/2 + ' 0 0,1 -' + (1+Math.cos(45)) * mWidth/4  + ',-' + (mHeight/2 -(mHeight/2 -(Math.sin(45)*mWidth/4))) + ' z',
+        name: 'pain'
+      }
+    }
+  };
+  mHeight = 900;
+  /*jshint camelcase: false */
+  zones.bmc = {
     partner_network: {
       width: mWidth/5,
       height: mHeight/4*3,
@@ -379,6 +428,12 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
       name: 'revenue_streams'
     }
   };
+  //FIX rect to path
+  Object.keys(zones.bmc).forEach(function(key){
+    var zone = zones.bmc[key];
+    zone.path = 'M 0,0 ' + zone.width + ',0 ' + zone.width + ',' + zone.height + ' 0,' + zone.height + ' z';
+  });
+  
   function Element(obj){
     this.id = obj.id;
     /*
@@ -476,10 +531,10 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
     this.elements = {};
     this.links = {};
     this.x = function(){
-      return this.column * (($scope.options.showDiff ? 2 : 1) * mWidth + this.colSpacing);
+      return this.column * (($scope.options.showDiff ? 2 : 1) * this.width + this.colSpacing);
     };
     this.y = function(){
-      return this.row * (mHeight + this.rowSpacing());
+      return this.row * (this.height + this.rowSpacing());
     };
     this.getColor = function(){
       var color = this.data.color;
@@ -492,9 +547,19 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
     this.rowSpacing = function(){
       return $scope.options.showChart ? rowSpacing + 700 : rowSpacing;
     };
+    
     this.width = mWidth;
     this.height = mHeight;
-    this.zones = zones;
+    this.zones = zones.bmc;
+    
+    this.getType = function(){
+      if(this.parent){
+        return this.parent.getType();
+      }else{
+        return this.data.type;
+      }
+    };
+    
     this.all = function(){
       var elements = {};
       if(this.parent){

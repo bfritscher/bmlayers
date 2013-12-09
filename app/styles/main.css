@@ -15,6 +15,7 @@ button,
 select,
 textarea {
   font-family: 'Roboto', "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: #FAFAFA;
   overflow: hidden;
 }
 
@@ -293,6 +294,7 @@ input.model-when {
   box-shadow: none;
   margin: 0;
   padding: 0;
+  background-color: transparent;
 }
 
 input.model-name:focus,
@@ -313,9 +315,10 @@ input.model-when:focus {
   fill: #efefef;
 }
 
-g.zones rect {
+
+g.zones .zone > path, g.zones .zone rect {
   stroke: #333;
-  fill: none;
+  fill: #fff;
 }
 
 g.zones g.new rect,
@@ -496,7 +499,7 @@ path.import {
   font-size: 20px;
 }
 
-.svgelement.image span{
+.svgelement.image span {
   vertical-align: bottom;
   text-align: right;
   font-size: 10px;
@@ -539,13 +542,14 @@ path.import {
   fill: red;
 }
 
-.dropzone{
+.dropzone {
   padding: 20px;
-  text-align:center;
+  text-align: center;
   font-style: italic;
   border: 1px dashed #333;
   margin: 10px;
   background-position: 50%, 50%;
+  -webkit-background-size: contain;
   background-size: contain;
   background-repeat: no-repeat;
 }
