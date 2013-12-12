@@ -7,6 +7,7 @@ body,
 .view-container {
   height: 100%;
   width: 100%;
+  overflow: auto;
 }
 
 body,
@@ -315,8 +316,8 @@ input.model-when:focus {
   fill: #efefef;
 }
 
-
-g.zones .zone > path, g.zones .zone rect {
+g.zones .zone > path,
+g.zones .zone rect {
   stroke: #333;
   fill: #fff;
 }

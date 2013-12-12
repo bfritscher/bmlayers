@@ -1,4 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" evolution></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" evolution>
+	<filter id="dropShadow">
+		<feGaussianBlur in="SourceAlpha" stdDeviation="4"></feGaussianBlur>
+		<feOffset dx="4" dy="4"></feOffset><feComponentTransfer>
+		  <feFuncA type="linear" slope="0.6"></feFuncA>
+		</feComponentTransfer>
+		
+		<feMerge>
+			<feMergeNode></feMergeNode>
+			<feMergeNode in="SourceGraphic"></feMergeNode>
+		</feMerge>
+	</filter>
+</svg>
 <div id="rightmenu" ng-show="options.editLinkID || options.editModelID || options.editElementID">
     <div ng-show="options.editElementID" class="editElement">
         <button ng-click="options.editElementID=undefined" class="close">&times;</button>

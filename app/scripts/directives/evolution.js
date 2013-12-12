@@ -212,16 +212,7 @@ angular.module('bmlayersApp')
           return 'M0,0';
         }
       });
-      
-      /*
-      modelEnter.append('rect')
-      .attr('class', 'model-background')
-      .attr('width', function(d){return d.value.width;})
-      .attr('height', function(d){return d.value.height;})
-      .attr('y', 0)
-      .attr('x', 0);
-      */
-        
+              
       //create model MENU
       var modelMenuEnter = modelEnter.append('g')
       .attr('class', 'model-menu')
@@ -251,6 +242,15 @@ angular.module('bmlayersApp')
         $compile(this)(scope);
       });
       
+      
+      //background
+      modelEnter.append('rect')
+      .attr('class', 'model-background')
+      .attr('width', function(d){return d.value.width;})
+      .attr('height', function(d){return d.value.height;})
+      .attr('filter' ,'url(#dropShadow)')
+      .attr('y', 0)
+      .attr('x', 0);
                    
           
       //Create ZONES
