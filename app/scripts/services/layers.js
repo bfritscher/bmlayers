@@ -143,7 +143,7 @@ angular.module('bmlayersApp')
       if(element.image){
         styles+=',';
       }
-      styles += 'linear-gradient(135deg'
+      styles += 'linear-gradient(135deg';
       element.tags.forEach(function(id, index){
         var offset = index * increment;
         styles +=',' + hexToRgba(tagById(id).color, 0.8) + ' ' + offset + '%';

@@ -6,56 +6,55 @@ angular.module('bmlayersApp')
 
   
     $(document.body).bind('keydown', function(event){
-       var key = event.keyCode;
-       var el = event.target;
-       var type = el.tagName.toLowerCase();
-       if (type === "input" || type === "textarea") { return; }
-       //TODO: cleanup
-       scope.$apply(function(){
-           var r = scope.focusedModel.row;
-           var c = scope.focusedModel.column;
-           if(39 === key && scope.focusedModel.children.length > 0){ //right
-               scope.options.transitionTo = scope.focusedModel.children[0].id;
-           }
-           if(37 === key && scope.focusedModel.parent){ //left
-               scope.options.transitionTo = scope.focusedModel.parent.id;
-           }
-           if(38 === key){ //up
-            if(scope.rows[r-1]){
-              if(scope.rows[r-1].cols[c]){
-                scope.options.transitionTo = scope.rows[r-1].cols[c].id;
-              }else{
-                var i = scope.rows[r-1].cols.length-1;;
-                while(!scope.rows[r-1].cols[i]){
-                  i--;
-                }
-                scope.options.transitionTo = scope.rows[r-1].cols[i].id;
+      var key = event.keyCode;
+      var el = event.target;
+      var type = el.tagName.toLowerCase();
+      var i;
+      if (type === "input" || type === "textarea") { return; }
+      //TODO: cleanup
+      scope.$apply(function(){
+        var r = scope.focusedModel.row;
+        var c = scope.focusedModel.column;
+        if(39 === key && scope.focusedModel.children.length > 0){ //right
+          scope.options.transitionTo = scope.focusedModel.children[0].id;
+        }
+        if(37 === key && scope.focusedModel.parent){ //left
+          scope.options.transitionTo = scope.focusedModel.parent.id;
+        }
+        if(38 === key){ //up
+          if(scope.rows[r-1]){
+            if(scope.rows[r-1].cols[c]){
+              scope.options.transitionTo = scope.rows[r-1].cols[c].id;
+            }else{
+              i = scope.rows[r-1].cols.length-1;
+              while(!scope.rows[r-1].cols[i]){
+                i--;
               }
+              scope.options.transitionTo = scope.rows[r-1].cols[i].id;
             }
-               
-           }
-           if(40 === key){ //down
-            if(scope.rows[r+1]){
-              if(scope.rows[r+1].cols[c]){
-                scope.options.transitionTo = scope.rows[r+1].cols[c].id;
-              }else{
-                var i = scope.rows[r+1].cols.length-1;;
-                while(!scope.rows[r+1].cols[i]){
-                  i--;
-                }
-                scope.options.transitionTo = scope.rows[r+1].cols[i].id;
+          }
+        }
+        if(40 === key){ //down
+          if(scope.rows[r+1]){
+            if(scope.rows[r+1].cols[c]){
+              scope.options.transitionTo = scope.rows[r+1].cols[c].id;
+            }else{
+              i = scope.rows[r+1].cols.length-1;
+              while(!scope.rows[r+1].cols[i]){
+                i--;
               }
+              scope.options.transitionTo = scope.rows[r+1].cols[i].id;
             }
-           }
-       });
-       
+          }
+        }
+      });
     });
   
   
     function zoomed() {
       var obj = svg;
       if(d3.event.sourceEvent === null){
-          obj = obj.transition().duration(1000);
+        obj = obj.transition().duration(1000);
       }
       obj.attr('transform', 'translate(' + d3.event.translate + ')scale(' + d3.event.scale + ')');
     }
@@ -248,7 +247,7 @@ angular.module('bmlayersApp')
       .attr('class', 'model-background')
       .attr('width', function(d){return d.value.width;})
       .attr('height', function(d){return d.value.height;})
-      .attr('filter' ,'url(#dropShadow)')
+      //.attr('filter' ,'url(#dropShadow)')
       .attr('y', 0)
       .attr('x', 0);
                    
@@ -301,31 +300,30 @@ angular.module('bmlayersApp')
       }, function(){
         var model = d3.select(d3.event.target.parentElement).data()[0];
         if(zoom.scale() > 0.25){
-            //ADD new element
-            
-            var zone = d3.select(d3.event.target).data()[0].value;
-            //TODO center on element?
-            var pos = d3.mouse(this);
-            var name = prompt('name?');
-            if(name){
-              scope.$apply(function(){
-                var id = uuid4.generate();
-                scope.data.elements[id] = {
-                  id: id,
-                  m: model.value.id,
-                  name: name,
-                  type: 'A',
-                  zone: zone.name,
-                  x: pos[0],
-                  y: pos[1]
-                };
-                scope.options.editElementID = id;
-              });
-            }
-        }else{
-            $timeout(function(){
-                scope.options.transitionTo = model.value.id;
+          //ADD new element
+          var zone = d3.select(d3.event.target).data()[0].value;
+          //TODO center on element?
+          var pos = d3.mouse(this);
+          var name = prompt('name?');
+          if(name){
+            scope.$apply(function(){
+              var id = uuid4.generate();
+              scope.data.elements[id] = {
+                id: id,
+                m: model.value.id,
+                name: name,
+                type: 'A',
+                zone: zone.name,
+                x: pos[0],
+                y: pos[1]
+              };
+              scope.options.editElementID = id;
             });
+          }
+        }else{
+          $timeout(function(){
+            scope.options.transitionTo = model.value.id;
+          });
         }
       });
     
@@ -746,7 +744,7 @@ angular.module('bmlayersApp')
           if(d.value.children.filter(function(e){ return currentModel.id === e.model.id; }).length === 0) {
             var type;
             do {
-              type=prompt('Change (C) or Delte (D)?', 'C');
+              type=prompt('Change (C) or Delete (D)?', 'C');
             }
             while(!(type===null || type === 'C' || type === 'D'));
             if(type){
