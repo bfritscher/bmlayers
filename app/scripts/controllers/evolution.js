@@ -114,10 +114,10 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
       return [{x:0,y:0},{x:0,y:0}];
     }
   }
-  
+
   $scope.$watch('data', function(){
     var id, model, e, parent;
-    if($scope.data && $scope.data.models){
+    if($scope.data && $scope.data.models) {
       //console.log('data');
   
       if(!$scope.data.elements){
