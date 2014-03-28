@@ -1,9 +1,10 @@
 'use strict';
 
 angular.module('bmlayersApp')
-.controller('EvolutionCtrl', ['$scope','angularFire', 'uuid4', '$routeParams', 'layers',
-function ($scope, angularFire, uuid4, $routeParams, layers) {
-    
+.controller('EvolutionCtrl', ['$scope','angularFire', 'uuid4', '$routeParams', 'layers', 'projects',
+function ($scope, angularFire, uuid4, $routeParams, layers, projects) {
+  
+  /*
   var ref = new Firebase('https://bm.firebaseio.com/projects/' + $routeParams.projectid);
   angularFire(ref, $scope, 'data').then(function(){
     if(Object.keys($scope.data.models).length === 0){
@@ -17,6 +18,18 @@ function ($scope, angularFire, uuid4, $routeParams, layers) {
     links:{},
     tags: layers.tags.tags
   };
+  */
+  $scope.data = projects[$routeParams.projectid];
+  if(!$scope.data){
+    var id = uuid4.generate();
+    $scope.data = {
+      elements:{},
+      models:{},
+      links:{},
+      tags: layers.tags.tags
+    };
+    $scope.data.models[id] = {id: id};
+  }
   
   $scope.options = {
     showDiff: true,

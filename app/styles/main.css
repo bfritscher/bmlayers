@@ -428,6 +428,11 @@ path.import {
   opacity: .25;
 }
 
+h1.title{
+  margin: 20px auto;
+  width: 610px;
+}
+
 .projects-frame {
   margin: auto;
   width: 300px;
